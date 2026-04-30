@@ -1,0 +1,2488 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Glo Sis Designs / Shenetria Perkins - AI Image Generator</title>
+  <style>
+    :root {
+      --ink: #24101c;
+      --muted: #70445f;
+      --page: #fff4fa;
+      --panel: #ffffff;
+      --panel-strong: #fff7fc;
+      --line: #ff8bc9;
+      --hot: #ff1493;
+      --hot-2: #ff4fb3;
+      --hot-3: #ff8ad2;
+      --hot-dark: #bd0067;
+      --gold: #ffd96a;
+      --shadow: rgba(255, 20, 147, 0.2);
+      --radius: 8px;
+      color-scheme: light;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      color: var(--ink);
+      background:
+        linear-gradient(180deg, #fff7fc 0%, #ffeaf6 48%, #fffafd 100%);
+      overflow-x: hidden;
+    }
+
+    body::before {
+      position: fixed;
+      inset: 0;
+      z-index: -2;
+      content: "";
+      background-image:
+        linear-gradient(rgba(255, 20, 147, 0.11) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 20, 147, 0.11) 1px, transparent 1px);
+      background-size: 44px 44px;
+      mask-image: linear-gradient(to bottom, black, transparent 92%);
+    }
+
+    body::after {
+      display: none;
+    }
+
+    @keyframes shimmer {
+      from { transform: translate3d(-4%, -3%, 0); }
+      to { transform: translate3d(4%, 3%, 0); }
+    }
+
+    button,
+    input,
+    textarea {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    .app-shell {
+      width: min(1480px, calc(100% - 28px));
+      margin: 0 auto;
+      padding: 22px 0 44px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 18px;
+      border: 1px solid #ff6fbd;
+      border-radius: var(--radius);
+      background: linear-gradient(135deg, var(--hot) 0%, var(--hot-2) 54%, var(--hot-3) 100%);
+      box-shadow: 0 18px 48px var(--shadow);
+      backdrop-filter: blur(16px);
+    }
+
+    .eyebrow {
+      margin: 0 0 6px;
+      color: #fff6a8;
+      font-size: 0.78rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0;
+    }
+
+    .creator-credit {
+      margin: 8px 0 0;
+      color: rgba(255, 255, 255, 0.86);
+      font-size: 0.95rem;
+      font-weight: 700;
+      letter-spacing: 0;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2rem, 4rem, 4rem);
+      line-height: 1;
+      letter-spacing: 0;
+      color: #ffffff;
+      text-shadow: 0 2px 0 rgba(189, 0, 103, 0.35);
+    }
+
+    .prompt-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+
+    .quick-actions {
+      margin-bottom: 12px;
+      padding: 10px;
+    }
+
+    .quick-actions .prompt-actions {
+      justify-content: flex-start;
+    }
+
+    .primary-btn,
+    .ghost-btn,
+    .copy-btn,
+    .small-btn {
+      min-height: 42px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      color: var(--ink);
+      background: #ffffff;
+      box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+      transition: transform 160ms ease, border-color 160ms ease, background 160ms ease, box-shadow 160ms ease;
+    }
+
+    .primary-btn {
+      padding: 0 18px;
+      border-color: var(--hot-dark);
+      color: #ffffff;
+      background: linear-gradient(135deg, var(--hot-dark), var(--hot), var(--hot-3));
+      font-weight: 900;
+      box-shadow: 0 10px 24px rgba(217, 72, 143, 0.22);
+    }
+
+    .ghost-btn,
+    .copy-btn,
+    .small-btn {
+      padding: 0 14px;
+      font-weight: 800;
+    }
+
+    .small-btn {
+      min-height: 34px;
+      padding: 0 10px;
+      font-size: 0.82rem;
+    }
+
+    .primary-btn:hover,
+    .ghost-btn:hover,
+    .copy-btn:hover,
+    .small-btn:hover,
+    .scroll-btn:hover {
+      transform: translateY(-1px);
+      border-color: var(--hot);
+      background: #ffe4f4;
+      box-shadow: 0 8px 18px rgba(255, 20, 147, 0.2);
+    }
+
+    .primary-btn:hover {
+      color: #ffffff;
+      background: linear-gradient(135deg, var(--hot-dark), var(--hot), var(--hot-3));
+    }
+
+    .marquee {
+      position: relative;
+      overflow: hidden;
+      margin: 14px 0;
+      border: 1px solid #ff5fb7;
+      border-radius: var(--radius);
+      background: linear-gradient(90deg, var(--hot-dark), var(--hot), var(--hot-3));
+      color: #ffffff;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .marquee span {
+      display: inline-block;
+      min-width: 100%;
+      padding: 10px 0;
+      animation: marquee 20s linear infinite;
+    }
+
+    @keyframes marquee {
+      0% { transform: translateX(100%); }
+      100% { transform: translateX(-100%); }
+    }
+
+    .reference-strip {
+      display: grid;
+      grid-auto-flow: column;
+      grid-auto-columns: minmax(128px, 1fr);
+      gap: 10px;
+      width: 100%;
+      margin-bottom: 18px;
+      padding: 10px;
+      overflow-x: auto;
+      border: 1px solid #ff5fb7;
+      border-radius: var(--radius);
+      background: linear-gradient(135deg, var(--hot), var(--hot-2));
+    }
+
+    .reference-strip img {
+      width: 100%;
+      height: 160px;
+      object-fit: cover;
+      border: 1px solid rgba(255, 255, 255, 0.62);
+      border-radius: var(--radius);
+      box-shadow: 0 10px 26px rgba(189, 0, 103, 0.24);
+    }
+
+    main {
+      display: block;
+      width: 100%;
+    }
+
+    .controls-stack,
+    .output-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      width: 100%;
+    }
+
+    .control-section,
+    .output-section,
+    .music-panel,
+    .marketing-panel {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #ffffff;
+      box-shadow: 0 12px 30px rgba(255, 20, 147, 0.11);
+    }
+
+    .control-section.is-hidden {
+      display: none;
+    }
+
+    .section-head {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px;
+      border-bottom: 1px solid rgba(255, 139, 201, 0.72);
+      background: #fff7fc;
+    }
+
+    .collapse-btn {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex: 1;
+      min-height: 40px;
+      border: 0;
+      color: var(--ink);
+      background: transparent;
+      font-weight: 900;
+      text-align: left;
+    }
+
+    .collapse-btn .count {
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-weight: 800;
+    }
+
+    .lock-btn {
+      width: 76px;
+      min-height: 36px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      color: var(--ink);
+      background: #ffffff;
+      font-size: 0.78rem;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0;
+    }
+
+    .lock-btn[aria-pressed="true"] {
+      border-color: var(--hot);
+      color: #ffffff;
+      background: linear-gradient(135deg, var(--hot-dark), var(--hot));
+      box-shadow: 0 8px 18px rgba(255, 20, 147, 0.2);
+    }
+
+    .section-body {
+      padding: 12px;
+    }
+
+    .control-section.collapsed .section-body {
+      display: none;
+    }
+
+    .option-strip,
+    .chip-strip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      width: 100%;
+    }
+
+    .option-chip,
+    .toggle-chip {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1 1 168px;
+      min-height: 42px;
+      min-width: 142px;
+      padding: 9px 10px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #ffffff;
+      color: var(--ink);
+      font-size: 0.88rem;
+      font-weight: 750;
+      line-height: 1.15;
+      transition: transform 160ms ease, border-color 160ms ease, background 160ms ease, box-shadow 160ms ease;
+    }
+
+    .option-chip input {
+      width: 15px;
+      height: 15px;
+      flex: 0 0 auto;
+      margin: 0;
+      accent-color: var(--hot);
+    }
+
+    .option-chip:has(input:checked),
+    .toggle-chip.is-active {
+      border-color: var(--hot);
+      color: #ffffff;
+      background: linear-gradient(135deg, var(--hot-dark), var(--hot), var(--hot-3));
+      box-shadow: 0 10px 22px rgba(255, 20, 147, 0.26);
+    }
+
+    .option-chip:hover,
+    .toggle-chip:hover {
+      transform: translateY(-1px);
+      border-color: var(--hot);
+      background: #ffe6f4;
+    }
+
+    .option-chip:has(input:checked):hover,
+    .toggle-chip.is-active:hover {
+      color: #ffffff;
+      background: linear-gradient(135deg, var(--hot-dark), var(--hot), var(--hot-3));
+    }
+
+    .custom-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 42px;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .custom-input {
+      width: 100%;
+      min-height: 42px;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      outline: none;
+      color: var(--ink);
+      background: #ffffff;
+    }
+
+    .custom-add-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 42px;
+      min-height: 42px;
+      border: 1px solid var(--hot);
+      border-radius: var(--radius);
+      color: #ffffff;
+      background: linear-gradient(135deg, var(--hot-dark), var(--hot), var(--hot-3));
+      font-size: 1.35rem;
+      font-weight: 900;
+      line-height: 1;
+      box-shadow: 0 8px 18px rgba(255, 20, 147, 0.18);
+    }
+
+    .custom-add-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 22px rgba(255, 20, 147, 0.26);
+    }
+
+    .custom-input:focus,
+    textarea:focus {
+      border-color: var(--hot);
+      box-shadow: 0 0 0 3px rgba(255, 20, 147, 0.16);
+    }
+
+    .output-section {
+      margin-top: 14px;
+      padding: 12px;
+    }
+
+    .output-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .output-title h2,
+    details > summary {
+      margin: 0;
+      color: var(--ink);
+      font-size: 1.05rem;
+      font-weight: 950;
+      letter-spacing: 0;
+    }
+
+    details > summary {
+      cursor: pointer;
+      list-style: none;
+    }
+
+    details > summary::-webkit-details-marker {
+      display: none;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 180px;
+      resize: vertical;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      color: var(--ink);
+      background: #ffffff;
+      line-height: 1.5;
+    }
+
+    .short-output {
+      min-height: 104px;
+    }
+
+    .variation-list,
+    .history-list,
+    .grid-output {
+      display: grid;
+      gap: 10px;
+    }
+
+    .variation-item,
+    .history-item,
+    .mini-output {
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #fff7fc;
+    }
+
+    .variation-item p,
+    .history-item p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .music-controls {
+      display: grid;
+      gap: 14px;
+      margin: 10px 0 14px;
+    }
+
+    .control-label {
+      margin: 0 0 8px;
+      color: #000000;
+      font-size: 0.84rem;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0;
+    }
+
+    .slider-row {
+      display: grid;
+      grid-template-columns: minmax(140px, 220px) 1fr 54px;
+      align-items: center;
+      gap: 10px;
+      padding: 8px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #ffffff;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--hot);
+    }
+
+    .grid-output {
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    }
+
+    .variation-item h3,
+    .mini-output h3 {
+      margin: 0 0 8px;
+      color: var(--ink);
+      font-size: 0.95rem;
+    }
+
+    .mini-output textarea {
+      min-height: 142px;
+    }
+
+    footer {
+      padding: 26px 0 4px;
+      color: var(--muted);
+      text-align: center;
+      font-size: 0.86rem;
+      font-weight: 800;
+      text-transform: lowercase;
+    }
+
+    .scroll-btn {
+      position: fixed;
+      right: 16px;
+      z-index: 5;
+      width: 44px;
+      height: 44px;
+      border: 1px solid var(--line);
+      border-radius: 50%;
+      color: var(--ink);
+      color: #ffffff;
+      background: linear-gradient(135deg, var(--hot-dark), var(--hot), var(--hot-3));
+      box-shadow: 0 10px 24px rgba(255, 20, 147, 0.26);
+    }
+
+    .scroll-btn.up {
+      bottom: 72px;
+    }
+
+    .scroll-btn.down {
+      bottom: 20px;
+    }
+
+    @media (max-width: 800px) {
+      .app-shell {
+        width: min(100% - 18px, 1480px);
+        padding-top: 10px;
+      }
+
+      .topbar,
+      .output-title,
+      .section-head {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      h1 {
+        font-size: clamp(2rem, 3rem, 3rem);
+      }
+
+      .prompt-actions {
+        justify-content: stretch;
+      }
+
+      .primary-btn,
+      .ghost-btn,
+      .copy-btn {
+        flex: 1 1 150px;
+      }
+
+      .option-chip,
+      .toggle-chip {
+        flex-basis: 100%;
+      }
+
+      .slider-row {
+        grid-template-columns: 1fr;
+      }
+
+      .reference-strip img {
+        height: 132px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell" id="top">
+    <header class="topbar">
+      <div>
+        <h1>Glo Sis Designs AI Image Generator</h1>
+        <p class="creator-credit">Created by Shenetria Perkins</p>
+      </div>
+    </header>
+
+    <div class="marquee" aria-label="Announcement">
+      <span>Build Your Dream Glam Character In Seconds - Mix The Style, Outfit, Pose, Background, And Sparkle - Generate Premium Prompts Made To Stop The Scroll</span>
+    </div>
+
+    <section class="reference-strip" aria-label="Reference style board">
+      <img src="assets/reference-01.jpg" alt="Glossy neon selfie reference">
+      <img src="assets/reference-02.jpg" alt="Rainbow DJ character reference">
+      <img src="assets/reference-03.jpg" alt="Retro neon glam reference">
+      <img src="assets/marquee-reference-04.jpg" alt="Pink Barbie hustle glam reference">
+      <img src="assets/glo-sis-reference-05.jpg" alt="Glo Sis pixie money glam reference">
+      <img src="assets/glo-sis-reference-06.jpg" alt="Glo Sis golden braid glam reference">
+      <img src="assets/marquee-reference-07.jpg" alt="Pink runway main character reference">
+      <img src="assets/marquee-reference-08.jpg" alt="Queen vibes rose garden reference">
+      <img src="assets/marquee-reference-09.jpg" alt="Pink diva car streetwear reference">
+      <img src="assets/marquee-reference-10.jpg" alt="Boss energy luxury skyline reference">
+      <img src="assets/marquee-reference-11.jpg" alt="Retail therapy shopping glam reference">
+      <img src="assets/marquee-reference-12.png" alt="Black and white luxury prayer glam reference">
+      <img src="assets/marquee-reference-13.png" alt="Glo Style glossy text reference">
+      <img src="assets/marquee-reference-14.png" alt="Faith of a mustard seed text reference">
+      <img src="assets/reference-16.jpg" alt="It girl sunset reference">
+      <img src="assets/reference-17.jpg" alt="Purple butterfly beauty reference">
+    </section>
+
+    <main>
+      <section class="control-section quick-actions" aria-label="Quick generator controls">
+        <div class="prompt-actions">
+          <button class="primary-btn" type="button" data-action="generate">Generate</button>
+          <button class="copy-btn" type="button" data-action="copy-main">Copy Prompt</button>
+          <button class="ghost-btn" type="button" data-action="clear">Clear All</button>
+          <button class="ghost-btn" type="button" data-action="variations">3 More Variations</button>
+          <button class="ghost-btn" type="button" data-action="save">Save Prompt</button>
+        </div>
+      </section>
+
+      <section class="controls-stack" id="controls"></section>
+
+      <section class="output-section" aria-labelledby="mainPromptTitle">
+        <div class="output-title">
+          <h2 id="mainPromptTitle">Generated Image Prompt</h2>
+          <div class="prompt-actions" aria-label="Generated prompt controls">
+            <button class="primary-btn" type="button" data-action="generate">Generate</button>
+            <button class="copy-btn" type="button" data-action="copy-main">Copy Prompt</button>
+            <button class="ghost-btn" type="button" data-action="clear">Clear All</button>
+            <button class="ghost-btn" type="button" data-action="variations">3 More Variations</button>
+            <button class="ghost-btn" type="button" data-action="save">Save Prompt</button>
+          </div>
+        </div>
+        <textarea id="mainPrompt" spellcheck="true"></textarea>
+      </section>
+
+      <section class="output-section" aria-labelledby="variationTitle">
+        <div class="output-title">
+          <h2 id="variationTitle">3 More Variations</h2>
+        </div>
+        <div class="variation-list" id="variationList"></div>
+      </section>
+
+      <section class="output-section" aria-labelledby="videoTitle">
+        <div class="output-title">
+          <h2 id="videoTitle">15-Second Animated Video Script</h2>
+          <button class="copy-btn" type="button" data-action="copy-video">Copy Video Script</button>
+        </div>
+        <textarea id="videoScript" class="short-output" spellcheck="true"></textarea>
+      </section>
+
+      <section class="output-section" aria-labelledby="sunoTitle">
+        <div class="output-title">
+          <h2 id="sunoTitle">Suno Music Controls</h2>
+          <button class="copy-btn" type="button" data-action="refresh-suno">Refresh Music</button>
+        </div>
+        <div class="music-controls">
+          <div>
+            <p class="control-label">Genre Selection</p>
+            <div class="chip-strip" id="genreChips"></div>
+          </div>
+          <div>
+            <p class="control-label">Style Influence Selection</p>
+            <div class="chip-strip" id="influenceChips"></div>
+          </div>
+          <div>
+            <p class="control-label">Vocal Type</p>
+            <div class="chip-strip" id="vocalChips"></div>
+          </div>
+          <div>
+            <p class="control-label">Audio Settings</p>
+            <div class="slider-row">
+              <strong>Weirdness</strong>
+              <input type="range" min="0" max="100" value="34" id="weirdness">
+              <span id="weirdnessValue">34%</span>
+            </div>
+            <div class="slider-row">
+              <strong>Style Influence</strong>
+              <input type="range" min="0" max="100" value="68" id="styleInfluence">
+              <span id="styleInfluenceValue">68%</span>
+            </div>
+            <div class="slider-row">
+              <strong>Audio Influence</strong>
+              <input type="range" min="0" max="100" value="52" id="audioInfluence">
+              <span id="audioInfluenceValue">52%</span>
+            </div>
+          </div>
+        </div>
+        <div class="grid-output" id="sunoOutputs"></div>
+      </section>
+
+      <details class="output-section" open>
+        <summary>Marketing Content Suite</summary>
+        <div class="grid-output" id="marketingOutputs"></div>
+      </details>
+
+      <details class="output-section">
+        <summary>Custom GPT Instructions</summary>
+        <div class="grid-output" id="gptOutputs"></div>
+      </details>
+
+      <details class="output-section">
+        <summary>Prompt History</summary>
+        <div class="history-list" id="historyList"></div>
+      </details>
+    </main>
+
+    <footer>All Rights Reserved By Glo Sis Designs / Shenetria Perkins</footer>
+  </div>
+
+  <button class="scroll-btn up" type="button" aria-label="Scroll up" data-scroll="top">▲</button>
+  <button class="scroll-btn down" type="button" aria-label="Scroll down" data-scroll="bottom">▼</button>
+
+  <script>
+    const styleDNA = "premium glossy fashion-doll character aesthetic, oversized expressive eyes, sculpted lashes, polished lips, radiant skin highlights, dramatic hair, luxury streetwear styling, neon pop color, candy-bright accents, sparkle details, cinematic rim lighting, high-end editorial finish";
+    const minorAgeGroups = new Set(["Baby", "Toddler", "Child", "Preteen", "Teen", "Adolescent"]);
+    const maleVariationBlockedOptions = {
+      artStyle: new Set(["Air Brushed Cartoon Baddie", "Glossy 3D Bratz", "Glossy 3D Chibi Mixed Bratz", "Hyper Realistic Airbrushed Baddie", "Kawaii Luxe", "Vintage Pin Up Glam"]),
+      facialExpression: new Set(["Glossy pout", "Sultry pouty", "Sweet doll expression", "Sweet innocent"]),
+      facialFeatures: new Set(["Doe Eyes", "Full glossy lips", "Glossy Lips", "High blush glow", "Long Lashes", "Pouty Lips", "Rounded doll cheeks", "Thick Eyelashes"]),
+      pose: new Set(["Hair Flip", "Lollipop pose", "Soft hand on cheek"]),
+      textOption: new Set(["Girls Love Glam", "It Girl", "Queen Vibes"]),
+      womenOutfit: new Set(["Bodycon Dress", "Cargo Pants & Tube Top", "Candy striped crop top", "Chiffon Maxi Dress", "Corset & Pencil Skirt", "Cropped pink hoodie and denim shorts", "Designer Louboutin Dress & Heels", "High Waisted Shorts & Tube Top", "Hot pink tennis skirt set", "Rainbow sporty crop set"]),
+      womenShoes: new Set(["Louboutin Heels", "Strappy Sandals", "Thigh High Boots", "Rainbow Sequin Ugg Boots"]),
+      womenAccessories: new Set(["Big Straw Sun Hat", "Cocktail Ring", "Crystal studs", "Dainty Gold Chains", "Diamond Ankle Bracelet", "Diamond Hoop Earrings", "Diamond Stud Earrings", "Diamond Stud Necklace", "Heart hoops", "Kentucky Derby Hat", "Large script hoops", "Pearl drops", "Pearl Jewelry", "Rhinestone choker", "Rhinestone hoops", "Star earrings", "Tiny shoulder bag"])
+    };
+    const ageGroupGuidance = {
+      "Baby": "baby age group, cherubic rounded features, tiny cute proportions, age-appropriate playful styling, modest outfit, innocent expression",
+      "Toddler": "toddler age group, small child proportions, soft rounded face, playful age-appropriate styling, modest outfit, innocent charm",
+      "Child": "child age group, youthful proportions, bright innocent expression, playful age-appropriate fashion, modest styling, cheerful character energy",
+      "Preteen": "preteen age group, youthful age-appropriate look, modest stylish outfit, playful confidence, no mature or sultry styling",
+      "Teen": "teen age group, youthful age-appropriate fashion, modest styling, fresh expressive personality, no mature or sultry styling",
+      "Adolescent": "adolescent age group, youthful age-appropriate styling, fresh character energy, modest fashion, no mature or sultry styling",
+      "Young Adult": "young adult age group, fresh mature fashion presence, polished modern styling, confident youthful-adult energy, premium glam details",
+      "Adult": "adult age group, mature polished fashion presence, confident glam styling, refined beauty details, premium editorial energy",
+      "Elderly": "elderly age group, graceful mature features, elegant timeless styling, refined expression, dignified glam presence"
+    };
+    const bodyTypeGuidance = {
+      "Slim Petit": "slim petite body type with a delicate frame, graceful proportions, and polished fashion silhouette",
+      "Soft & Round": "soft and round body type with gentle curves, plush friendly proportions, and polished cute fashion silhouette",
+      "Small and Cute": "small cute body type with compact proportions, soft charm, and playful fashion-doll silhouette",
+      "Curvy": "curvy body type with soft balanced curves, confident proportions, and polished glam fashion silhouette",
+      "Curvy & Voluptuous": "curvy and voluptuous adult body type with balanced full proportions, confident styling, and polished fashion silhouette",
+      "Toned": "toned body type with subtle muscle definition, sleek lines, and healthy polished shape",
+      "Athletic": "athletic body type with strong balanced proportions, active posture, and sporty fashion confidence",
+      "Fit": "fit body type with clean healthy proportions, defined posture, and polished lifestyle styling",
+      "Muscular": "muscular body type with visible strength, sculpted arms and legs, and powerful confident stance",
+      "Hourglass": "hourglass body type with balanced shoulders and hips, defined waist, and elegant fashion silhouette",
+      "Pear Shaped": "pear-shaped body type with fuller hips, narrower shoulders, and balanced stylish proportions",
+      "Plus Size": "plus-size body type with full confident proportions, polished styling, and glamorous fashion presence",
+      "Tall and Lanky": "tall and lanky body type with long limbs, slender relaxed proportions, and stylish editorial posture",
+      "Tall & Lean": "tall and lean body type with elongated proportions, graceful posture, and editorial runway silhouette",
+      "Petite": "petite body type with shorter delicate proportions, compact frame, and polished cute styling"
+    };
+    const artStyleGuidance = {
+      "18K Digital Illustration": "ultra-high-resolution 18K digital illustration, polished digital paintwork, crisp micro-detail, premium glossy finish, clean edges, dramatic depth, luminous highlights",
+      "Air Brushed Cartoon Baddie": "airbrushed cartoon baddie style, smooth gradient shading, exaggerated glam face, bold lashes, sculpted lips, clean cartoon outlines, glossy beauty finish",
+      "Airbrushed pop illustration": "airbrushed pop illustration style, smooth blended gradients, vibrant pop-art color, glossy beauty finish, and clean polished character rendering",
+      "Anime Glamor": "anime glamor style, large expressive anime-inspired eyes, refined facial proportions, dramatic hair shine, fashionable styling, luminous skin, polished cinematic color",
+      "Candy-coated editorial render": "candy-coated editorial render, glossy saturated color, polished fashion-magazine composition, sweet luxury details, and high-end digital shine",
+      "Cartoon": "cartoon style, expressive simplified shapes, bold readable silhouette, playful exaggeration, clean linework, vibrant color, glossy character finish",
+      "Cinematic animated fashion doll": "cinematic animated fashion doll style, dramatic character lighting, expressive doll proportions, glossy skin, and polished film-like fashion styling",
+      "Comic Book": "comic book style, bold ink outlines, dynamic pose energy, graphic shadow blocks, halftone and Ben-Day-inspired texture, punchy saturated color, dramatic panel-ready lighting",
+      "Exaggerated Chibi Style": "exaggerated chibi style, oversized head, tiny full body, cute compact proportions, big sparkling eyes, playful expression, glossy glam doll detail",
+      "Fashion Illustration": "fashion illustration style, elongated editorial proportions, expressive couture sketch energy, stylish garment emphasis, graceful pose, polished runway presentation",
+      "3D glam doll render": "3D glam doll render, sculpted fashion-doll proportions, glossy toy-like materials, dramatic lashes, polished lips, and premium studio lighting",
+      "Glossy 3D Bratz": "glossy 3D Bratz-inspired fashion doll style, oversized almond eyes, full glossy lips, glam streetwear styling, polished toy-like render, dramatic lashes, premium shine",
+      "Glossy 3D Chibi Illustration": "glossy 3D chibi illustration, cute compact character proportions, rounded sculpted features, premium 3D shine, bright color, soft cinematic lighting",
+      "Glossy 3D Chibi Mixed Bratz": "glossy 3D chibi mixed with Bratz-inspired glam, compact cute body, oversized fashion-doll eyes, dramatic lashes, glossy lips, streetwear attitude, polished 3D render",
+      "Glossy chibi luxury portrait": "glossy chibi luxury portrait style, cute compact proportions, luxury styling, oversized expressive eyes, smooth 3D shine, and polished high-end portrait lighting",
+      "Hyper Realistic Airbrushed Baddie": "hyper realistic airbrushed baddie style, smooth magazine-cover gradients, realistic glossy skin, sculpted makeup, sharp lashes, luxury glam styling, flawless polished finish",
+      "Hyper Realistic Chibi Style": "hyper realistic chibi style, cute oversized head and compact body with realistic glossy materials, detailed skin highlights, dimensional hair, lifelike lighting, premium 3D finish",
+      "Hyper-realistic stylized doll": "hyper-realistic stylized doll style, realistic glossy materials, exaggerated fashion-doll features, detailed skin highlights, and polished cinematic rendering",
+      "Kawaii Luxe": "kawaii luxe style, cute soft proportions, sparkling oversized eyes, pastel-meets-luxury color, glossy accessories, plush high-end finish, delicate charm details",
+      "Neon Y2K pop art": "neon Y2K pop art style, retrofuturist glow, saturated pinks and blues, glossy chrome details, playful tech-pop energy, and bold commercial-art impact",
+      "Pop Art Glam": "pop art glam style, commercial-art brightness, comic-inspired contrast, bold color fields, glossy beauty subject, graphic shapes, high-impact fashion poster energy",
+      "Premium fashion caricature": "premium fashion caricature style, stylish exaggeration, polished glam facial features, editorial fashion attitude, and refined glossy rendering",
+      "Retro Vintage": "retro vintage glam style, nostalgic color grading, classic poster polish, soft film-like warmth, old-school fashion attitude, timeless editorial composition",
+      "Runway cartoon realism": "runway cartoon realism, animated character polish blended with realistic fashion details, full-body runway attitude, glossy lighting, and refined editorial styling",
+      "Sleek digital painting": "sleek digital painting style, smooth brushwork, crisp polished edges, luminous fashion lighting, and refined high-resolution character finish",
+      "Thick Lined Coloring Page": "true printable coloring book page style, black-and-white line art only, thick bold clean outlines, large open white fill areas for coloring, simplified fashion details, no color, no gradients, no glossy render, no shadows, no grayscale shading",
+      "Vintage Pin Up Glam": "vintage pin up glam style, classic posed glamour, polished retro beauty, curled hair language, soft warm lighting, elegant playful expression, poster-ready finish",
+      "Y2K Aesthetic": "Y2K aesthetic, glossy retrofuturist styling, chrome highlights, neon accents, playful tech-pop details, saturated pinks and blues, early-2000s glam attitude"
+    };
+    const textArtStyleGuidance = {
+      "3D Render Style": "3D render style with dimensional modeling, polished studio lighting, smooth sculpted forms, and premium high-detail realism",
+      "Anime Manga Art": "anime manga art style with expressive eyes, clean inked shapes, dynamic character energy, and polished illustrated glam detail",
+      "Bold Cartoon Style": "bold cartoon style with strong outlines, punchy shapes, bright color blocking, and playful high-impact character design",
+      "Chibi Cute Character Style": "chibi cute character style with oversized head, tiny body proportions, big sparkling eyes, and polished adorable charm",
+      "Contemporary Fine Art": "contemporary fine art style with modern gallery polish, refined composition, expressive color, and elevated artistic finish",
+      "Cute Kawaii Aesthetic": "cute kawaii aesthetic with sweet rounded shapes, pastel charm, sparkling eyes, and polished playful innocence",
+      "Designer Toy Aesthetic": "designer toy aesthetic with collectible vinyl-doll proportions, smooth sculpted surfaces, luxury toy polish, and stylized charm",
+      "Digital Illustration Style": "digital illustration style with crisp polished brushwork, clean edges, high-resolution detail, and vibrant modern color",
+      "Disney Princess Style": "fairy-tale princess animation-inspired style with elegant magical charm, expressive eyes, graceful pose, and polished storybook glamour",
+      "Futuristic Holographic Art": "futuristic holographic art style with iridescent shine, sci-fi color shifts, reflective glow, and polished digital luxury",
+      "Girly Glam Style": "girly glam style with feminine sparkle, glossy beauty details, cute luxury accents, and polished pretty fashion energy",
+      "Graffiti Street Art": "graffiti street art style with spray-paint texture, bold urban marks, layered color, and polished street-culture impact",
+      "High-End CGI Look": "high-end CGI look with cinematic realism, premium 3D lighting, refined render detail, and glossy studio-quality finish",
+      "Luxury Graphic Design Look": "luxury graphic design look with premium layout polish, refined color harmony, high-end branding energy, and crisp visual balance",
+      "Magazine Collage Art": "magazine collage art style with layered editorial cutouts, fashion layout energy, mixed textures, and polished print-design composition",
+      "Maximalist Busy Art": "maximalist busy art style with dense decorative detail, layered color, abundant visual motifs, and polished energetic composition",
+      "Minimalist Modern Art": "minimalist modern art style with clean simplified forms, restrained composition, elegant negative space, and polished contemporary finish",
+      "Neon Glow Cyberpunk": "neon glow cyberpunk style with electric city color, futuristic lighting, high-contrast glow, and polished sci-fi glam atmosphere",
+      "Oil Painting Art": "oil painting art style with rich painterly texture, layered brush strokes, luminous color depth, and polished fine-art finish",
+      "Playful Typography Illustration": "playful typography illustration style with expressive lettering, bright graphic shapes, cheerful composition, and polished readable design",
+      "Pop Art Comic Book Style": "pop art comic book style with bold halftones, graphic panel energy, saturated color, and polished commercial-art impact",
+      "Psychedelic Trippy Style": "psychedelic trippy style with swirling color, surreal patterns, vibrant distortion, and polished dream-pop visual energy",
+      "Renaissance Baroque Style": "renaissance baroque style with dramatic classical lighting, ornate composition, rich painterly detail, and polished old-master elegance",
+      "Retro 90s Digital Art": "retro 90s digital art style with nostalgic early-digital color, playful pixel-era energy, bold graphics, and polished throwback finish",
+      "Retro Vintage Aesthetic": "retro vintage aesthetic with nostalgic color grading, old-school graphic charm, warm classic styling, and polished timeless finish",
+      "Sticker Design Style": "sticker design style with crisp cutout edges, glossy decal shine, bold silhouette, and polished collectible graphic impact",
+      "Street Art Inspired Style": "street art inspired style with urban wall-art energy, painted textures, bold graphic contrast, and polished contemporary edge",
+      "Surreal Dreamlike Style": "surreal dreamlike style with imaginative fantasy details, soft impossible atmosphere, luminous color, and polished artistic mystery",
+      "Vector Flat Design": "vector flat design style with clean geometric shapes, crisp edges, simplified color fields, and polished modern graphic clarity",
+      "Watercolor Painted Effect": "watercolor painted effect with translucent washes, soft pigment blooms, gentle paper texture, and polished delicate art finish"
+    };
+    const textColorPaletteGuidance = {
+      "Black And Gold": "black and gold text color palette with rich black contrast, metallic gold shine, and premium luxury readability",
+      "Burgundy And Champagne": "burgundy and champagne text color palette with deep wine tones, soft champagne glow, and elegant glam contrast",
+      "Cheetah Brown Ombre": "cheetah brown ombre text color palette with warm animal-print browns, smooth tonal fade, and stylish safari-glam energy",
+      "Copper And Ivory": "copper and ivory text color palette with warm metallic copper shine, creamy ivory balance, and polished upscale softness",
+      "Coral And Cream": "coral and cream text color palette with fresh coral warmth, soft cream highlights, and bright feminine readability",
+      "Deep Purple And Pearl": "deep purple and pearl text color palette with royal purple depth, pearly highlights, and polished glam contrast",
+      "Deep Teal And Rose": "deep teal and rose text color palette with jewel-toned teal, romantic rose accents, and balanced luxe contrast",
+      "Dusty Rose And Mauve": "dusty rose and mauve text color palette with muted pink-purple softness, romantic warmth, and gentle polished readability",
+      "Emerald And Gold": "emerald and gold text color palette with vivid jewel green, metallic gold accents, and regal luxury shine",
+      "Forest Green And Cream": "forest green and cream text color palette with deep natural green, soft cream contrast, and refined botanical polish",
+      "Hot Pink And White": "hot pink and white text color palette with bright pink impact, crisp white contrast, and clean girly glam readability",
+      "Lavender And Silver": "lavender and silver text color palette with soft purple glow, metallic silver shine, and dreamy polished contrast",
+      "Lime Green And Purple": "lime green and purple text color palette with electric green pop, rich purple contrast, and playful high-energy impact",
+      "Magenta And Lime": "magenta and lime text color palette with bold pink-purple saturation, neon lime accents, and bright pop-art energy",
+      "Mint And Bubblegum": "mint and bubblegum text color palette with fresh mint green, sweet bubblegum pink, and cute candy-glam softness",
+      "Navy And Seafoam": "navy and seafoam text color palette with deep blue grounding, pale seafoam freshness, and clean coastal contrast",
+      "Navy Blue And Orange": "navy blue and orange text color palette with dark blue depth, vivid orange pop, and sporty bold readability",
+      "Neon Colors": "neon colors text palette with electric high-saturation hues, glowing edges, and bold nightlife-style readability",
+      "Neon Gradient": "neon gradient text color palette with luminous blended neon transitions, bright glow, and polished cyber-pop impact",
+      "Orange Gradient": "orange gradient text color palette with smooth citrus-to-amber transitions, warm glow, and vibrant readable lettering",
+      "Pastel Mix": "pastel mix text color palette with soft candy colors, gentle blended contrast, and sweet polished charm",
+      "Peachy Pink And White": "peachy pink and white text color palette with warm peach-pink softness, crisp white highlights, and clean pretty readability",
+      "Pink And Purple": "pink and purple text color palette with feminine pink brightness, rich purple depth, and glossy glam harmony",
+      "Powder Blue And Rose": "powder blue and rose text color palette with airy blue softness, romantic rose warmth, and delicate polished balance",
+      "Purple And Silver": "purple and silver text color palette with royal purple tone, metallic silver shine, and elegant high-contrast glamour",
+      "Rainbow Gradient": "rainbow gradient text color palette with smooth multi-color transitions, bright cheerful saturation, and playful standout readability",
+      "Red And White": "red and white text color palette with bold red impact, crisp white contrast, and clean statement readability",
+      "Sage Green And Blush": "sage green and blush text color palette with soft earthy green, gentle pink warmth, and modern feminine polish",
+      "Steel Grey And Gold": "steel grey and gold text color palette with cool grey structure, metallic gold highlights, and refined luxury contrast",
+      "Sunset Orange To Purple": "sunset orange to purple text color palette with warm orange fading into rich purple, glowing dusk energy, and polished gradient depth",
+      "Sunshine Yellow And Black": "sunshine yellow and black text color palette with bright yellow punch, strong black contrast, and bold readable impact",
+      "Teal And Pink": "teal and pink text color palette with fresh teal contrast, bright pink glam, and playful polished balance",
+      "Turquoise And Coral": "turquoise and coral text color palette with tropical blue-green freshness, coral warmth, and vibrant resort-glam readability",
+      "Yellow And Hot Pink": "yellow and hot pink text color palette with sunny yellow brightness, hot pink energy, and fun high-contrast pop"
+    };
+    const facialExpressionGuidance = {
+      "Bold fearless": "bold fearless expression, direct confident eye contact, lifted chin, powerful main-character presence",
+      "Bossy calm stare": "bossy calm stare, composed confident eyes, controlled luxury attitude, polished editorial stillness",
+      "Confident soft smile": "confident soft smile, relaxed eyes, warm glam charm, approachable premium beauty energy",
+      "Dreamy gaze": "dreamy gaze, soft unfocused eyes, romantic glossy expression, gentle ethereal mood",
+      "Dreamy side glance": "dreamy side glance, soft sideways eyes, subtle flirtation, elegant reflective mood",
+      "Fierce determination": "fierce determined expression, intense focused eyes, strong brows, unstoppable fashion-boss energy",
+      "Flirty smirk": "flirty smirk, playful asymmetric smile, sparkling eyes, confident glam attitude",
+      "Gentle smile": "gentle smile, soft friendly eyes, calm polished warmth, graceful beauty expression",
+      "Glamorous smile": "glamorous smile, radiant polished grin, glossy lips, sparkling eyes, high-fashion confidence",
+      "Glossy pout": "glossy pout, full polished lips, sultry doll-like expression, soft beauty intensity",
+      "Playful wink": "playful wink, cheeky glam expression, bright smile, fun confident pose energy",
+      "Serene elegance": "serene elegant expression, calm refined eyes, poised soft smile, luxurious graceful mood",
+      "Serious runway gaze": "serious runway gaze, intense fashion stare, sculpted face, high-end editorial attitude",
+      "Soft glam smile": "soft glam smile, delicate polished expression, glowing cheeks, warm beauty-pageant poise",
+      "Sultry pouty": "sultry pouty expression, softly parted glossy lips, seductive eyes, dramatic baddie glam",
+      "Sweet doll expression": "sweet doll expression, wide innocent eyes, soft smile, cute polished fashion-doll charm",
+      "Sweet innocent": "sweet innocent expression, gentle wide eyes, soft closed-mouth smile, pure delicate charm"
+    };
+    const skinToneGuidance = {
+      "Caramel": "caramel skin tone with warm golden undertones and glossy radiant highlights",
+      "Caramel brown": "caramel brown skin with smooth warmth, soft golden undertones, and polished glow",
+      "Cinnamon brown": "cinnamon brown skin with warm reddish undertones and luminous glam highlights",
+      "Deep chocolate": "deep chocolate skin tone with rich depth, smooth even glow, and luxurious glossy highlights",
+      "Deep espresso": "deep espresso skin with rich cool depth, high-shine highlights, and sculpted dimension",
+      "Fair porcelain": "fair porcelain skin tone with delicate rosy undertones, smooth doll-like finish, and soft luminous highlights",
+      "Golden brown": "golden brown skin with sunlit warmth, radiant highlights, and smooth premium glow",
+      "Golden tan": "golden tan skin tone with bronzed warmth, sun-kissed glow, and glossy polished highlights",
+      "Honey bronze": "honey bronze skin with warm amber undertones, glossy shine, and high-fashion radiance",
+      "Mahogany glow": "mahogany glowing skin with red-brown depth, polished warmth, and radiant reflective highlights",
+      "Rich chocolate": "rich chocolate skin tone with deep warm brown richness, smooth glow, and glossy dimensional highlights",
+      "Rich cocoa": "rich cocoa skin with velvety brown depth, soft luminous shine, and glam polished finish",
+      "Rosy pink": "rosy pink skin tone with soft blush undertones, porcelain-like smoothness, and gentle luminous glow",
+      "Toffee brown": "toffee brown skin with caramel warmth, glossy highlights, and smooth radiant finish",
+      "Vitiligo": "skin with vitiligo, natural distinct depigmented patches integrated respectfully into the character design, glossy radiant highlights, and beautiful unique complexion detail",
+      "Warm almond": "warm almond skin with neutral golden undertones, soft beauty glow, and polished smooth highlights",
+      "Warm chestnut": "warm chestnut skin with rich golden-red undertones, glossy depth, and radiant glam shine",
+      "Warm honey": "warm honey skin tone with golden amber undertones, sunlit glow, and glossy premium highlights"
+    };
+    const facialFeatureGuidance = {
+      "Almond eyes": "almond-shaped eyes with lifted outer corners, polished glam symmetry, and expressive doll-like focus",
+      "Beauty Marks": "subtle beauty marks placed naturally on the face, adding unique character and editorial charm",
+      "Button nose": "small button nose with soft rounded shape, glossy highlight, and cute doll-like balance",
+      "Cat eyes": "cat-eye eye shape with lifted outer corners, sleek seductive gaze, and sharp glam attitude",
+      "Defined cheekbones": "defined cheekbones with sculpted contour, radiant highlight, and high-fashion facial structure",
+      "Defined jaw line": "defined jaw line with clean sculpted structure, elegant face framing, and polished profile detail",
+      "Dimples": "soft dimples that appear with the expression, adding playful charm and warm personality",
+      "Doe Eyes": "wide doe eyes with soft innocent openness, glossy sparkle, and gentle expressive beauty",
+      "Freckles": "natural freckles across the cheeks and nose, softly blended into glossy radiant skin",
+      "Full glossy lips": "full glossy lips with plump shape, reflective shine, and polished glam finish",
+      "Full lips": "full lips with soft volume, balanced shape, and smooth glam polish",
+      "Glossy Lips": "glossy lips with mirror-like shine, crisp lip shape, and high-fashion beauty finish",
+      "Heart-shaped face": "heart-shaped face with soft forehead width, delicate chin, and balanced doll-like proportions",
+      "High blush glow": "high blush glow across the cheeks, radiant lifted color, and soft beauty warmth",
+      "High Cheekbones": "high cheekbones with lifted sculpted structure, luminous highlight, and model-like facial definition",
+      "Long Lashes": "long lashes with extended flutter, curled definition, and glamorous eye emphasis",
+      "Pouty Lips": "pouty lips with plush rounded fullness, soft parted shape, and sultry glossy finish",
+      "Rounded doll cheeks": "rounded doll cheeks with youthful softness, polished blush, and cute dimensional glow",
+      "Rounded Eyes": "rounded eyes with open doll-like shape, bright sparkle, and soft charming expression",
+      "Small Nose": "small nose with delicate bridge, refined tip, and soft glossy highlight",
+      "Soft freckles": "soft freckles lightly scattered across the cheeks and nose, natural and delicate against glowing skin",
+      "Symmetrical glam face": "symmetrical glam face with balanced proportions, polished beauty structure, and premium doll-like harmony",
+      "Thick Eyelashes": "thick eyelashes with dense volume, dramatic curl, and bold glamorous eye framing",
+      "Unique beauty mark": "unique beauty mark placed as a signature facial detail, adding individuality and premium editorial charm"
+    };
+    const eyebrowGuidance = {
+      "Arched Eyebrows": "arched eyebrows with a clean lifted shape, polished brow structure, and elegant glam definition",
+      "Dramatic Eyebrows": "dramatic eyebrows with bold high-contrast shape, strong arch, and fierce editorial intensity",
+      "Natural Eyebrows": "natural eyebrows with soft groomed texture, realistic brow fullness, and effortless beauty balance",
+      "Thick Eyebrows": "thick eyebrows with full dense shape, polished grooming, bold face-framing structure, and glam definition"
+    };
+    const eyeColorGuidance = {
+      "Amber": "amber eyes with warm golden-orange depth, glossy catchlights, and jewel-like sparkle",
+      "Aqua blue": "aqua blue eyes with bright turquoise clarity, luminous reflections, and polished doll-like shine",
+      "Black": "black eyes with deep glossy intensity, mirror-like catchlights, and dramatic high-fashion focus",
+      "Blue": "blue eyes with clear saturated color, icy highlights, and glossy cinematic sparkle",
+      "Brown": "brown eyes with rich warm depth, soft golden catchlights, and natural glossy dimension",
+      "Chocolate brown": "chocolate brown eyes with deep velvety warmth, reflective highlights, and expressive glam softness",
+      "Emerald green": "emerald green eyes with vivid jewel tone, luminous shine, and striking luxury color",
+      "Golden hazel": "golden hazel eyes with mixed amber-green depth, radiant highlights, and dimensional sparkle",
+      "Green": "green eyes with fresh vivid color, glossy reflections, and bright expressive detail",
+      "Hazel": "hazel eyes with warm brown-green variation, golden flecks, and glossy natural depth",
+      "Honey brown": "honey brown eyes with golden amber warmth, soft shine, and glowing catchlights",
+      "Hunter Green": "hunter green eyes with deep forest-green richness, moody jewel tone, and glossy dramatic highlights",
+      "Icy blue": "icy blue eyes with pale crystal clarity, cool luminous highlights, and sharp glossy sparkle",
+      "Lavender": "lavender eyes with soft purple pastel tone, dreamy glow, and delicate glossy reflection",
+      "Light black Heterochromia": "light black heterochromia eyes with two subtly different dark tones, unique asymmetry, glossy catchlights, and striking character detail",
+      "Neon green": "neon green eyes with electric glow, bright fantasy color, glossy reflections, and intense pop-art impact",
+      "Pink": "pink eyes with vivid rosy fantasy color, glossy shine, and playful doll-like sparkle",
+      "Purple": "purple eyes with rich violet depth, luminous highlights, and glamorous fantasy sparkle",
+      "Violet": "violet eyes with saturated purple-blue depth, glossy catchlights, and elegant fantasy shine",
+      "Yellow": "yellow eyes with golden fantasy brightness, sharp luminous catchlights, and dramatic jewel-like intensity"
+    };
+    const makeupStyleGuidance = {
+      "Blush": "soft blush placement that adds healthy color, lifted cheeks, and polished beauty warmth",
+      "Brick Blush": "brick-toned blush with warm earthy color, sculpted cheek placement, and editorial glam depth",
+      "Candy pink glam": "candy pink glam makeup with bright pink tones, glossy beauty finish, and playful doll-like color",
+      "Cat-eye lashes": "cat-eye lashes with lifted outer-corner flare, curled volume, and sharp glam eye framing",
+      "Chrome shimmer lids": "chrome shimmer eyelids with reflective metallic shine, luminous sparkle, and futuristic glam polish",
+      "Contoured Face": "contoured face makeup with sculpted cheekbones, defined facial structure, and seamless airbrushed blending",
+      "Cut Crease": "cut crease eye makeup with crisp lid definition, dramatic shadow contrast, and precise glam artistry",
+      "Cut-crease neon liner": "cut-crease neon liner with sharp graphic shape, bright color pop, and glossy editorial impact",
+      "Dewy Skin": "dewy skin makeup with luminous hydrated glow, fresh reflective highlights, and smooth radiant finish",
+      "Double Winged Liner": "double winged liner with two sharp extended liner wings, graphic eye drama, and high-fashion precision",
+      "Emerald eye glow": "emerald eye glow makeup with jewel-green shimmer, luminous eye emphasis, and luxury fantasy sparkle",
+      "Eyeshadow Gradient": "eyeshadow gradient with seamless blended color transition, polished lid depth, and soft glam dimension",
+      "Full Matte Face": "full matte face makeup with smooth shine-free complexion, velvet finish, and polished studio-perfect coverage",
+      "Dramatic doll lashes": "dramatic doll lashes with oversized curled volume, crisp separation, and bold fashion-doll eye impact",
+      "Fluttery glam lashes": "fluttery glam lashes with soft layered curl, airy volume, and polished feminine eye emphasis",
+      "Full mink-style lashes": "full mink-style lashes with plush layered volume, curled lift, and luxury glam eye framing",
+      "Glitter eyeshadow": "glitter eyeshadow with sparkling reflective particles, bright lid shine, and glamorous party-light impact",
+      "Glossy Lips": "glossy lips with glass-like shine, plump reflective finish, and clean polished lip shape",
+      "Glossy nude glam": "glossy nude glam makeup with neutral sculpted tones, soft shimmer, and premium polished beauty finish",
+      "Hot pink blush": "hot pink blush with bold cheek color, playful doll glam, and bright pop-art beauty energy",
+      "Lavender halo eye": "lavender halo eye makeup with soft purple glow around the lids, luminous center highlight, and dreamy glam finish",
+      "Lower-lash accents": "lower-lash accents with delicate bottom-lash detail, widened doll-eye effect, and polished glam balance",
+      "MAC Red Matte Lip": "classic MAC-inspired red matte lip with bold red color, crisp lip edges, and velvet high-glam finish",
+      "Neon tinted lashes": "neon tinted lashes with bright colored lash detail, electric pop-art energy, and glossy fantasy eye styling",
+      "Ombred Lips": "ombred lips with blended dark-to-light lip color, dimensional fullness, and glossy glam definition",
+      "Peachy Blush": "peachy blush with warm coral softness, fresh cheek glow, and gentle radiant color",
+      "Pink Blush": "pink blush with rosy cheek color, sweet glam warmth, and soft lifted placement",
+      "Pink Lips": "pink lips with soft rosy color, smooth polished shape, and glossy feminine finish",
+      "Rainbow eye shadow": "rainbow eye shadow with blended multi-color lids, vibrant fantasy glam, and bright playful impact",
+      "Soft bronze glam": "soft bronze glam makeup with warm neutral shimmer, sculpted glow, and sunlit polished beauty",
+      "Soft wispy lashes": "soft wispy lashes with natural flutter, fine separation, and gentle polished eye framing",
+      "Spiky Y2K lashes": "spiky Y2K lashes with separated pointed clusters, bold retro glam attitude, and crisp eye detail",
+      "Thick runway lashes": "thick runway lashes with dense dramatic volume, lifted curl, and high-fashion eye emphasis",
+      "Ultra-long lashes": "ultra-long lashes with extended curl, dramatic length, and polished doll-eye glamour",
+      "White inner-corner highlight": "white inner-corner highlight with bright eye-opening sparkle, crisp luminous detail, and glossy glam finish",
+      "Winged Liner": "winged liner with sharp cat-eye flicks, lifted eye shape, and sleek classic glam precision"
+    };
+    const nailStyleGuidance = {
+      "Chrome almond nails": "chrome almond nails with smooth tapered oval shape, mirror-like metallic shine, and polished glam finish",
+      "Coffin": "coffin-shaped nails with squared tapered tips, sleek length, and glossy high-fashion polish",
+      "Extra-long neon nails": "extra-long neon nails with bright saturated color, sharp clean shape, and bold glossy statement detail",
+      "French tip nails": "French tip nails with clean white tips, polished nude base, and elegant glossy manicure finish",
+      "Glossy white nails": "glossy white nails with clean bright polish, smooth reflective shine, and crisp luxury manicure detail",
+      "Hot pink coffin nails": "hot pink coffin nails with squared tapered shape, vivid pink color, and glossy baddie glam finish",
+      "Lime green stilettos": "lime green stiletto nails with long tapered pointed shape, electric color, and glossy neon shine",
+      "Pink Diamond Studded Nails": "pink diamond-studded nails with glossy pink polish, rhinestone accents, sparkle highlights, and premium glam detail",
+      "Rainbow acrylic nails": "rainbow acrylic nails with multi-color polish, playful glossy finish, and bold pop-art manicure energy",
+      "Rhinestone nails": "rhinestone nails with crystal embellishments, reflective sparkle, and luxury manicure shine",
+      "Short glossy square nails": "short glossy square nails with clean squared shape, smooth polish, and practical polished glam finish",
+      "Square Nails": "square nails with straight clean tips, balanced length, glossy polish, and crisp modern manicure shape",
+      "Stiletto Nails": "stiletto nails with long tapered pointed shape, dramatic silhouette, and glossy high-glam finish"
+    };
+    const tattooBodyArtGuidance = {
+      "Arabic Tattoo": "Arabic script tattoo with elegant calligraphic linework, tasteful placement, and polished body-art detail",
+      "Arm Bands": "decorative armband body art wrapping the upper arm or forearm with clean graphic detail and polished placement",
+      "Body Gems & Rhinestones": "body gems and rhinestones placed tastefully on the skin with sparkling crystal shine and glam editorial detail",
+      "Butterfly Wings Tattoo": "butterfly wings tattoo with delicate wing detail, graceful symmetry, and feminine glam body-art styling",
+      "Chest Tattoo": "chest tattoo with tasteful placement, clean linework, and visible polished body-art detail",
+      "Cosmic Tattoo": "cosmic tattoo with stars, moons, planets, and celestial linework arranged as dreamy polished body art",
+      "Crown Tattoo": "crown tattoo with regal linework, small luxury symbol detail, and polished placement",
+      "Delicate Ankle Tattoo": "delicate ankle tattoo with fine-line detail, small elegant placement, and polished feminine body art",
+      "Face Gem": "face gem accent with tiny sparkling crystal placement, clean glam styling, and polished editorial shine",
+      "Face Tattoo": "face tattoo with small tasteful graphic detail, precise placement, and edgy fashion-doll styling",
+      "Full Body Art": "full body art with coordinated tattoos or paint across visible skin, cohesive design flow, and premium editorial polish",
+      "Glitter Body Art": "glitter body art with sparkling cosmetic glitter, tasteful skin placement, and glamorous reflective shine",
+      "Glow in the Dark Paint": "glow-in-the-dark body paint with luminous neon glow, clean painted shapes, and high-impact nightlife styling",
+      "Henna Designs": "henna designs with intricate floral and paisley patterns, graceful hand or arm placement, and polished cultural body-art detail",
+      "Holographic Body Paint": "holographic body paint with iridescent color shift, glossy reflective sheen, and futuristic glam finish",
+      "Infinity Symbol Tattoo": "infinity symbol tattoo with clean fine-line curves, meaningful minimal design, and polished placement",
+      "Lock & Key Tattoo": "lock and key tattoo with paired symbolic detail, clean linework, and romantic polished body-art styling",
+      "Lower Back Tattoo": "lower back tattoo with elegant centered placement, clean ornamental detail, and polished body-art visibility",
+      "Money Bag Tattoo": "money bag tattoo with playful wealth-symbol detail, clean graphic linework, and glam streetwear energy",
+      "Music Note Tattoo": "music note tattoo with crisp musical symbols, small stylish placement, and polished artistic detail",
+      "Name Tattoo": "name tattoo with clean script lettering, personalized placement, and polished fine-line body-art styling",
+      "Neck Tattoo": "neck tattoo with visible tasteful placement, sharp linework, and edgy fashion editorial impact",
+      "Rose Tattoo": "rose tattoo with detailed petals, graceful botanical linework, and polished romantic body-art styling",
+      "Sleeve Tattoo": "sleeve tattoo covering the arm with cohesive artwork, layered detail, and polished full-arm body-art impact",
+      "Tear Drop Tattoo": "teardrop tattoo with tiny precise face-side placement, dramatic story-driven detail, and polished styling",
+      "Tribal Tattoo": "tribal tattoo with bold flowing black patterns, clean symmetrical linework, and polished graphic body-art detail",
+      "Waist Tattoo": "waist tattoo with flattering side-waist placement, delicate linework, and polished glam body-art detail",
+      "Zodiac Symbol Tattoo": "zodiac symbol tattoo with clean astrological glyph detail, small meaningful placement, and polished celestial styling"
+    };
+    const hairstyleGuidance = {
+      "Beach Waves": "beach waves hairstyle with loose sun-kissed texture, soft movement, and glossy effortless finish",
+      "Blow Out Style": "blowout hairstyle with full polished volume, smooth lifted roots, and bouncy salon-fresh movement",
+      "Blunt silk press": "blunt silk press hairstyle with sleek straight strands, sharp ends, mirror shine, and smooth polished flow",
+      "Bob Cut": "bob cut hairstyle with clean chin-to-shoulder length shape, polished edges, and glossy modern finish",
+      "Bouncy side-part waves": "bouncy side-part waves with glamorous volume, deep side part, soft curl movement, and glossy shine",
+      "Boxed Braids": "boxed braids hairstyle with neat square parting, polished braid pattern, and clean protective-style detail",
+      "Braided Crown": "braided crown hairstyle wrapped elegantly around the head with regal shape, clean braid detail, and polished finish",
+      "Artistic swooped edges": "artistic swooped edges styled along the hairline with sculptural baby-hair curves, glossy hold, and polished detail",
+      "Corn Rows": "cornrow hairstyle with neat scalp braids, clean parting, sleek pattern, and polished protective-style detail",
+      "Clean laid edges": "clean laid edges with smooth precise hairline styling, polished baby-hair detail, and sleek glossy finish",
+      "Curly high ponytail": "curly high ponytail with lifted crown placement, defined curls, bouncy volume, and glossy movement",
+      "Delicate baby hairs": "delicate baby hairs with soft fine hairline swoops, natural polish, and subtle glam detail",
+      "Double buns": "double buns hairstyle with two balanced buns, playful shape, polished edges, and glossy glam detail",
+      "Elegant Updo": "elegant updo hairstyle with lifted sculpted shape, refined pinned detail, and formal polished glamour",
+      "Extra-long beach waves": "extra-long beach waves with flowing length, loose soft texture, and glossy dimensional highlights",
+      "Faux Locs": "faux locs hairstyle with long protective loc texture, clean parting, polished detail, and dimensional shine",
+      "French Braids": "French braids hairstyle with smooth woven braids, clean scalp detail, and polished classic structure",
+      "Fulani Braids": "Fulani braids hairstyle with center or side braid pattern, face-framing braids, decorative braid structure, and polished finish",
+      "Glamour Waves": "glamour waves hairstyle with sculpted old-Hollywood wave pattern, deep shine, and polished luxury movement",
+      "Goddess Braids": "goddess braids hairstyle with thick elegant braids, soft curly accents, regal volume, and polished protective-style finish",
+      "Golden box braids": "golden box braids with warm blonde braid color, neat square parting, glossy shine, and premium protective styling",
+      "Glossy sculpted edges": "glossy sculpted edges with sleek high-shine baby-hair shaping, crisp curves, and polished hairline finish",
+      "Half-up ponytail": "half-up ponytail hairstyle with lifted top section, flowing lower hair, polished volume, and glossy movement",
+      "Heart swoop edges": "heart swoop edges with playful heart-shaped baby-hair styling, glossy hold, and cute glam detail",
+      "High Ponytail": "high ponytail hairstyle with lifted crown placement, sleek base, flowing length, and confident glam energy",
+      "High Top Fade": "high top fade hairstyle with tall structured top, clean faded sides, sharp shape-up, and polished retro streetwear detail",
+      "High pigtails": "high pigtails hairstyle with two lifted ponytails, playful symmetry, bouncy movement, and glossy doll-like finish",
+      "Jumbo Braids": "jumbo braids hairstyle with oversized braid sections, bold protective-style shape, clean parting, and glossy polish",
+      "Layered Cut": "layered cut hairstyle with face-framing layers, dimensional movement, and polished salon texture",
+      "Layered curls": "layered curls hairstyle with stacked curl shape, dimensional volume, and defined glossy ringlets",
+      "Locs": "locs hairstyle with clean mature loc texture, dimensional shine, and polished protective-style presence",
+      "Long Bob": "long bob hairstyle with shoulder-grazing length, clean shape, subtle movement, and glossy modern polish",
+      "Long Flowing Waves": "long flowing waves with full cascading length, soft glamorous movement, and glossy dimensional shine",
+      "Low Cut Fade": "low cut fade hairstyle with close-cropped top, clean faded sides, crisp hairline, and polished barbershop finish",
+      "Low Cut Fade w/ Lined Beard": "low cut fade hairstyle with a precisely lined beard, sharp edge-up, clean fade blend, and polished masculine grooming detail",
+      "Low Cut Fade w/Designs": "low cut fade hairstyle with shaved design lines, crisp faded sides, clean shape-up, and polished creative barbershop detail",
+      "Messy Bun with Baby Hairs": "messy bun with baby hairs, soft gathered volume, intentionally loose pieces, and clean styled edges",
+      "Micro Braids": "micro braids hairstyle with tiny detailed braids, refined parting, flowing movement, and polished protective-style finish",
+      "Minimal soft edges": "minimal soft edges with gentle natural hairline styling, subtle baby-hair detail, and clean polished finish",
+      "Pigtails": "pigtails hairstyle with two balanced ponytails, playful youthful shape, and glossy polished finish",
+      "Pixie Cut": "pixie cut hairstyle with short sculpted shape, clean texture, and confident polished glam finish",
+      "Pixie with Waves": "pixie with waves hairstyle with short finger-wave texture, sculpted movement, and glossy retro glam finish",
+      "Afro": "afro hairstyle with rounded natural volume, defined texture, balanced shape, and polished healthy shine",
+      "Big Afro": "big afro hairstyle with bold rounded natural volume, full textured silhouette, healthy defined shape, and polished statement shine",
+      "Afro Taper": "afro taper hairstyle with natural textured volume on top, clean tapered sides, crisp edge-up, and polished barbershop shape",
+      "Flat Top": "flat top hairstyle with squared high top shape, clean faded sides, sharp geometric structure, and polished retro detail",
+      "Rhinestone accented edges": "rhinestone accented edges with tiny crystal details along the hairline, glossy baby-hair styling, and sparkling glam polish",
+      "Short styled waves": "short styled waves with sculpted wave pattern, polished shape, and glossy face-framing shine",
+      "Side-swept Bangs": "side-swept bangs with soft angled fringe, face-framing movement, and polished salon finish",
+      "Sideburn swirls": "sideburn swirls with curled side hairline detail, glossy sculpted hold, and polished face-framing styling",
+      "Sleek Bun": "sleek bun hairstyle with smooth pulled-back base, polished bun shape, and clean refined edges",
+      "Sleek gelled edges": "sleek gelled edges with smooth controlled hairline, clean shine, and polished high-glam finish",
+      "Sleek Straight": "sleek straight hairstyle with smooth flat-ironed strands, clean center or side part, and mirror-like shine",
+      "Slicked Back Ponytail": "slicked-back ponytail with smooth controlled base, clean hairline, flowing tail, and polished high-glam finish",
+      "Soft Waves": "soft waves hairstyle with gentle flowing bends, natural movement, and glossy romantic finish",
+      "Space Buns": "space buns hairstyle with two high playful buns, polished symmetry, and glossy Y2K glam energy",
+      "Spiral Curls": "spiral curls hairstyle with defined corkscrew curl pattern, bouncy volume, and glossy curl separation",
+      "Textured Layers": "textured layers hairstyle with piecey movement, dimensional volume, and polished editorial shape",
+      "Twisted Braids": "twisted braids hairstyle with rope-like braid texture, neat sections, and glossy protective-style detail",
+      "Two Strand Twist": "two-strand twist hairstyle with clean twisted sections, defined texture, and polished natural-hair detail",
+      "Voluminous Curls": "voluminous curls hairstyle with big defined curl body, rounded shape, and glossy dramatic fullness",
+      "Wave-pattern edges": "wave-pattern edges with flowing baby-hair waves along the hairline, glossy hold, and polished decorative detail"
+    };
+    const hairColorGuidance = {
+      "Black with hot pink streaks": "black hair with hot pink streaks, bold contrast panels, glossy shine, and edgy Y2K color drama",
+      "Blonde": "blonde hair color with bright golden dimension, soft highlights, and glossy salon-polished shine",
+      "Caramel Brown": "caramel brown hair color with warm golden-brown depth, soft highlights, and glossy dimensional finish",
+      "Chocolate Brown": "chocolate brown hair color with rich brunette depth, smooth shine, and polished warm undertones",
+      "Chocolate Brown with Blonde Honey Pieces": "chocolate brown hair with honey-blonde pieces framing the face, glossy warm contrast, and dimensional salon color",
+      "Copper": "copper hair color with warm metallic orange-red shine, dimensional glow, and polished glam finish",
+      "Copper red": "copper red hair color with fiery warm red-orange undertones, glossy shine, and rich dimensional highlights",
+      "Cotton Candy Blue": "cotton candy blue hair color with soft pastel aqua-blue tone, dreamy shine, and playful glossy fantasy finish",
+      "Cotton Candy Pink": "cotton candy pink hair color with soft pastel pink sweetness, glossy shine, and playful doll-like color",
+      "Deep Purple": "deep purple hair color with rich violet depth, glossy dimensional shadows, and dramatic luxury shine",
+      "Emerald Green": "emerald green hair color with vivid jewel-tone richness, luminous highlights, and glossy fantasy polish",
+      "Fiery Red": "fiery red hair color with bold vibrant red intensity, warm glow, and glossy statement shine",
+      "Forest Green": "forest green hair color with deep botanical green richness, moody dimension, and glossy polished highlights",
+      "Ginger": "ginger hair color with warm natural orange-red tone, soft golden highlights, and glossy dimensional shine",
+      "Golden blonde": "golden blonde hair color with warm sunlit tone, luminous highlights, and polished salon shine",
+      "Highlights & Lowlights": "hair color with blended highlights and lowlights, dimensional contrast, natural depth, and glossy salon finish",
+      "Holographic": "holographic hair color with iridescent multi-tone shine, reflective pastel shifts, and futuristic glossy glow",
+      "Honey Blonde": "honey blonde hair color with warm amber-gold tone, soft brightness, and glossy sunlit dimension",
+      "Honey blonde": "honey blonde hair color with warm amber-gold tone, soft brightness, and glossy sunlit dimension",
+      "Hot Pink": "hot pink hair color with vivid saturated pink intensity, glossy shine, and bold pop-glam attitude",
+      "Jet black": "jet black hair color with deep ink-black richness, mirror-like shine, and sleek dramatic polish",
+      "Lavender Purple": "lavender purple hair color with soft pastel violet tone, dreamy shine, and delicate glossy fantasy finish",
+      "Neon rainbow": "neon rainbow hair color with electric multi-color sections, high saturation, glossy shine, and playful stage-light energy",
+      "Ombre Highlights": "ombre highlights with smooth dark-to-light color transition, face-framing brightness, and glossy salon dimension",
+      "Pastel Pink": "pastel pink hair color with soft rosy tone, delicate shine, and sweet glossy doll-like finish",
+      "Pink and black ombre": "pink and black ombre hair color with dark roots, vivid pink fade, glossy contrast, and edgy glam finish",
+      "Platinum Blonde": "platinum blonde hair color with icy pale brightness, cool-toned shine, and high-fashion glossy polish",
+      "Rainbow": "rainbow hair color with vibrant multi-color sections, clean blended transitions, and glossy fantasy shine",
+      "Rainbow Ombre": "rainbow ombre hair color with smooth multi-color gradient, saturated fantasy tones, and glossy dimensional flow",
+      "Rich Brunette": "rich brunette hair color with deep brown luxury tone, subtle warm dimension, and glossy healthy shine",
+      "Rose Gold": "rose gold hair color with metallic pink-gold warmth, soft shimmer, and glossy luxury finish",
+      "Rose pink": "rose pink hair color with romantic pink tone, soft dimensional shine, and polished glam finish",
+      "Royal Blue": "royal blue hair color with rich saturated blue tone, glossy dimensional shine, and bold luxury color impact",
+      "Silver": "silver hair color with cool metallic shine, pale reflective highlights, and sleek futuristic polish",
+      "Strawberry Blonde": "strawberry blonde hair color with warm peachy-blonde tone, soft copper glow, and glossy sunlit finish"
+    };
+    const womenOutfitGuidance = {
+      "Bodycon Dress": "bodycon dress outfit with sleek fitted silhouette, polished glam styling, smooth fabric texture, and confident evening-fashion energy",
+      "Boho Chic Ensemble": "boho chic ensemble with relaxed layered styling, soft flowing textures, earthy luxe accessories, and polished free-spirited fashion detail",
+      "Brown velour tracksuit": "brown velour tracksuit with plush glossy texture, coordinated lounge set styling, warm chocolate tone, and polished street-glam comfort",
+      "Candy striped crop top": "candy striped crop top outfit with bright playful color bands, sporty glam styling, and glossy pop-doll energy",
+      "Cargo Pants & Crop Top": "cargo pants and crop top outfit with utilitarian pocket detail, fitted cropped top balance, streetwear edge, and polished baddie styling",
+      "Cargo Pants & Tube Top": "cargo pants and tube top outfit with structured streetwear pants, sleek strapless top, confident silhouette, and glossy fashion-doll polish",
+      "Chiffon Maxi Dress": "chiffon maxi dress with airy flowing fabric, full-length elegant drape, soft translucent layers, and graceful polished glam styling",
+      "Corset & Distressed Jeans": "corset and distressed jeans outfit with structured waist detail, edgy denim texture, and polished glam streetwear attitude",
+      "Corset & Pencil Skirt": "corset and pencil skirt outfit with sculpted waistline, sleek tailored skirt, elegant glam shape, and premium polished styling",
+      "Cropped pink hoodie and denim shorts": "cropped pink hoodie and denim shorts outfit with playful streetwear energy, glossy pink fabric, distressed denim texture, and confident casual glam",
+      "Denim Jacket & Shorts": "denim jacket and shorts outfit with coordinated blue denim texture, casual streetwear polish, and crisp youthful fashion styling",
+      "Designer Burberry Outfit & Shoes": "Burberry-inspired designer outfit and shoes with luxury trench-inspired tailoring, refined plaid-accent energy, polished footwear, and high-end editorial styling",
+      "Designer Chanel Outfit & Shoes": "Chanel-inspired designer outfit and shoes with classic tweed-like luxury texture, pearl-and-gold styling cues, polished footwear, and timeless glam elegance",
+      "Designer Gucci Loafers & Outfit": "Gucci-inspired designer loafers and outfit with luxe loafer detail, polished coordinated styling, rich fashion-house energy, and refined glossy finish",
+      "Designer Louis Vuitton Outfit & Shoes": "Louis Vuitton-inspired designer outfit and shoes with luxury travel-fashion energy, coordinated accessories, polished footwear, and premium editorial styling",
+      "Designer Louboutin Dress & Heels": "Louboutin-inspired designer dress and heels with sleek luxury dress styling, red-sole-inspired heel attitude, polished evening glam, and high-fashion confidence",
+      "Designer Prada Outfit & Shoes": "Prada-inspired designer outfit and shoes with sleek minimalist luxury styling, structured fashion details, polished footwear, and modern editorial polish",
+      "Designer Tom Ford Outfit & Shoes": "Tom Ford-inspired designer outfit and shoes with sharp sensual tailoring, refined luxury evening energy, polished footwear, and sophisticated glam finish",
+      "Designer Valentino Outfit & Shoes": "Valentino-inspired designer outfit and shoes with romantic luxury styling, couture-like polish, elegant footwear, and refined high-fashion glamour",
+      "Designer Versace Outfit & Shoes": "Versace-inspired designer outfit and shoes with bold luxury glamour, ornate gold-accent energy, polished footwear, and confident runway styling",
+      "Designer-inspired white tracksuit": "designer-inspired white tracksuit with crisp monochrome styling, luxury sporty details, glossy fabric highlights, and polished streetwear elegance",
+      "Glam Streetwear": "glam streetwear outfit with bold urban styling, polished luxury accents, fitted-meets-relaxed silhouette, and glossy baddie fashion energy",
+      "Gold runway varsity set": "gold runway varsity set with sporty luxury jacket styling, coordinated gold-and-white pieces, glossy runway shine, and confident full-body fashion impact",
+      "Graphic Tee & Cargo Pants": "graphic tee and cargo pants outfit with bold printed top, utility pocket detail, streetwear balance, and polished casual glam finish",
+      "Graphic Tee & Distressed Jeans": "graphic tee and distressed jeans outfit with bold printed top, ripped denim texture, edgy casual styling, and polished streetwear attitude",
+      "Graphic Tee & Jeans": "graphic tee and jeans outfit with clean casual denim styling, bold top graphic, polished everyday glam, and confident streetwear energy",
+      "Graphic tee and joggers": "graphic tee and joggers outfit with casual sporty styling, comfortable streetwear silhouette, bold graphic detail, and polished glam finish",
+      "High Waisted Shorts & Tube Top": "high-waisted shorts and tube top outfit with leg-lengthening shorts, sleek strapless top, playful summer glam, and polished fashion-doll styling",
+      "Hot pink tennis skirt set": "hot pink tennis skirt set with sporty feminine shape, bright pink color, coordinated crop styling, and glossy playful glam",
+      "Leather Jacket & Distressed Jeans": "leather jacket and distressed jeans outfit with glossy jacket texture, edgy ripped denim, and confident rock-glam streetwear attitude",
+      "Linen Flare-Leg Suit": "linen flare-leg suit with breathable tailored texture, elongated flared pants, polished resort-luxe styling, and clean elegant drape",
+      "Linen Short Set": "linen short set with lightweight fabric texture, coordinated top-and-short styling, resort glam polish, and fresh clean silhouette",
+      "Luxury monogram lounge set": "luxury monogram lounge set with coordinated designer-inspired patterning, soft polished texture, and relaxed high-end glam styling",
+      "Neon sweatshirt and gold jewelry": "neon sweatshirt and gold jewelry outfit with bright oversized streetwear color, statement metallic accessories, and glossy confident glam",
+      "Nike Dunk Outfit": "Nike Dunk-inspired sneaker outfit with sporty streetwear coordination, bold sneaker-focused styling, crisp casual layers, and polished urban glam",
+      "Oversized Blazer / Tube Top & Distressed Jeans": "oversized blazer, tube top, and distressed jeans outfit with sharp tailoring, sleek strapless base, ripped denim texture, and polished fashion-editorial contrast",
+      "Rainbow sporty crop set": "rainbow sporty crop set with bright multi-color athletic styling, glossy stretch fabric, and playful pop-glam confidence",
+      "Tie-Dye Hoodie & Distressed Jeans": "tie-dye hoodie and distressed jeans outfit with colorful casual hoodie texture, ripped denim contrast, and relaxed polished streetwear energy"
+    };
+    const womenShoeGuidance = {
+      "Air Jordan 3": "Air Jordan 3-inspired sneakers with iconic retro basketball shape, visible sole detail, crisp panels, and polished streetwear finish",
+      "Air Jordan 11": "Air Jordan 11-inspired sneakers with glossy patent-style panels, sleek basketball silhouette, and polished luxury sneaker shine",
+      "Barefoot": "barefoot styling with clean natural feet visible, graceful grounded pose, and polished full-body composition",
+      "Brown and white high-top sneakers": "brown and white high-top sneakers with crisp leather panels, clean laces, glossy finish, and coordinated streetwear styling",
+      "Chunky platform sneakers": "chunky platform sneakers with elevated sole, bold Y2K shape, glossy material detail, and confident fashion-doll stance",
+      "Combat Boots": "combat boots with rugged lace-up structure, chunky sole, polished leather texture, and edgy street-glam attitude",
+      "Crocs": "Crocs-inspired clogs with lightweight molded shape, casual comfort styling, clean rounded toe detail, and playful relaxed fashion energy",
+      "Croc Slip-In Shoes": "Croc-style slip-in shoes with easy slide-on clog shape, molded texture, casual cozy styling, and polished playful comfort detail",
+      "Crystal embellished sneakers": "crystal embellished sneakers with rhinestone sparkle, clean sneaker silhouette, reflective highlights, and luxury glam detail",
+      "Fuzzy Slippers": "fuzzy slippers with plush soft texture, cozy glam styling, and cute polished lounge-fashion detail",
+      "Gold and white runway sneakers": "gold and white runway sneakers with metallic accents, crisp white panels, glossy luxury finish, and coordinated runway styling",
+      "Gucci Flip Flops": "Gucci-inspired flip flops with luxury resort styling, polished strap detail, and relaxed designer glam energy",
+      "Gucci Sneakers": "Gucci-inspired sneakers with designer streetwear energy, polished color accents, crisp panels, and luxury casual styling",
+      "Hot pink sneakers": "hot pink sneakers with vivid saturated color, glossy finish, clean sole detail, and playful baddie styling",
+      "Louboutin Heels": "Louboutin-inspired heels with sleek luxury shape, red-sole-inspired detail, glossy finish, and high-fashion evening glam",
+      "Louis Vuitton Sneakers": "Louis Vuitton-inspired sneakers with luxury monogram energy, crisp sneaker structure, glossy material detail, and polished designer styling",
+      "Luxury monogram sneakers": "luxury monogram sneakers with designer-inspired patterning, crisp panels, polished shine, and coordinated high-end streetwear finish",
+      "Neon high tops": "neon high-top sneakers with bright electric color, crisp lace detail, glossy finish, and bold streetwear pop",
+      "Nike Air Max": "Nike Air Max-inspired sneakers with sporty cushioned silhouette, visible air-sole energy, crisp panels, and polished athletic styling",
+      "Nike Air Force 1 Black": "black Nike Air Force 1-inspired sneakers with clean low-top silhouette, crisp sole detail, and polished all-black streetwear finish",
+      "Nike Air Force 1 White": "white Nike Air Force 1-inspired sneakers with clean low-top silhouette, crisp white leather look, and polished classic sneaker finish",
+      "Nike Dunks": "Nike Dunk-inspired sneakers with retro court silhouette, bold color-blocked panels, clean laces, and polished streetwear energy",
+      "Nike Slip-In Shoes": "Nike-inspired slip-in shoes with sleek easy-on silhouette, sporty comfort styling, clean sole detail, and polished casual athletic finish",
+      "Patent leather sneakers": "patent leather sneakers with glossy reflective panels, crisp footwear structure, and polished fashion-sneaker shine",
+      "Platform Boots": "platform boots with elevated chunky sole, bold fashion silhouette, glossy material texture, and confident Y2K glam stance",
+      "Rainbow Sequin Ugg Boots": "rainbow sequin Ugg-inspired boots with plush boot shape, sparkling multicolor sequin texture, and playful cozy glam shine",
+      "Retro Jordan 1": "Retro Jordan 1-inspired sneakers with high-top basketball silhouette, bold panel contrast, crisp laces, and polished streetwear impact",
+      "Sneakers": "sneakers with clean sporty shape, crisp sole detail, polished panels, and coordinated casual fashion styling",
+      "Strappy Sandals": "strappy sandals with delicate ankle and foot straps, polished open-toe styling, and elegant warm-weather glam finish",
+      "Thigh High Boots": "thigh-high boots with long sleek silhouette, glossy material finish, and dramatic high-fashion styling",
+      "Ugg Boots": "Ugg-inspired boots with plush cozy texture, rounded boot shape, and polished casual-luxe styling",
+      "Versace Sandals": "Versace-inspired sandals with bold luxury accents, polished strap design, and confident resort-glam styling",
+      "White designer-inspired trainers": "white designer-inspired trainers with crisp clean panels, polished sole detail, and luxury sporty styling",
+      "Y2K platform boots": "Y2K platform boots with chunky elevated sole, retro-futurist shape, glossy finish, and playful throwback glam"
+    };
+    const womenAccessoryGuidance = {
+      "90's Bamboo Earrings": "90s bamboo hoop earrings with bold gold-tone door-knocker shape, retro street-glam shine, and polished face-framing attitude",
+      "90's Bamboo Earrings with Name": "90s bamboo hoop earrings with custom name lettering, bold gold-tone retro shape, polished personalized shine, and street-glam attitude",
+      "Baseball Cap": "baseball cap accessory with clean sporty shape, curved brim detail, and polished casual streetwear styling",
+      "Bangle stack": "bangle stack with layered metallic bracelets, reflective shine, and polished wrist accessory detail",
+      "Beanie": "beanie accessory with soft knit texture, cozy fitted shape, and polished casual styling",
+      "Big Straw Sun Hat": "big straw sun hat with oversized brim, woven texture, resort-glam energy, and elegant summer styling",
+      "Bum Bag": "bum bag accessory with compact waist or crossbody placement, streetwear practicality, and polished fashion detail",
+      "Chunky gold hoops": "chunky gold hoop earrings with oversized circular shape, warm metallic shine, and bold face-framing glam detail",
+      "Chunky Gold Chains": "chunky gold chains with bold metallic links, glossy shine, and confident luxury accessory impact",
+      "Cocktail Ring": "cocktail ring with oversized gemstone statement, reflective sparkle, and polished glam hand detail",
+      "Crystal studs": "crystal stud earrings with small bright sparkle, polished ear detail, and refined face-framing shine",
+      "Dainty Gold Chains": "dainty gold chains with delicate layered shine, fine jewelry detail, and refined feminine polish",
+      "Designer Belt": "designer-inspired belt with polished buckle detail, waist-defining styling, and luxury fashion finish",
+      "Designer Handbag": "designer-inspired handbag with structured luxury shape, polished hardware, and premium fashion-house energy",
+      "Diamond Ankle Bracelet": "diamond ankle bracelet with delicate sparkle around the ankle, polished jewelry shine, and elegant detail",
+      "Diamond Earrings": "diamond earrings with bright reflective sparkle, polished metal setting, and luxury face-framing shine",
+      "Diamond Crust Grillz": "diamond crust grillz with iced-out tooth jewelry sparkle, polished mouth detail, luxury shine, and bold street-glam attitude",
+      "Diamond Hoop Earrings": "diamond hoop earrings with circular sparkle, reflective stones, and polished glamorous face-framing detail",
+      "Diamond Link Necklace": "diamond link necklace with connected sparkling links, luxury shine, and polished neckline detail",
+      "Diamond Stud Earrings": "diamond stud earrings with clean sparkling points of light, refined luxury shine, and polished ear detail",
+      "Diamond Stud Necklace": "diamond stud necklace with delicate sparkling pendant detail, refined shine, and elegant neckline polish",
+      "Diamond watch": "diamond watch with iced-out bezel sparkle, polished metal band, and luxury wristwear detail",
+      "Fedora": "fedora hat accessory with structured brim, polished crown shape, and stylish editorial attitude",
+      "Glossy smartphone": "glossy smartphone accessory with reflective screen, polished tech detail, and modern selfie-ready styling",
+      "Gold Cuban Link Necklace": "gold Cuban link necklace with thick interlocking links, high-shine metallic finish, and confident luxury styling",
+      "Gold Grillz": "gold grillz with polished metallic tooth jewelry, warm reflective shine, and confident luxury streetwear detail",
+      "Gold Hoops": "gold hoop earrings with smooth metallic shine, classic circular shape, and polished glam face framing",
+      "Gold chain necklace": "gold chain necklace with polished metallic links, warm shine, and clean luxury accessory detail",
+      "Heart hoops": "heart hoop earrings with playful heart-shaped silhouette, glossy metal shine, and sweet glam face-framing detail",
+      "Kentucky Derby Hat": "Kentucky Derby hat with dramatic sculptural brim, elegant event styling, and polished statement-fashion detail",
+      "Large script hoops": "large script hoop earrings with custom lettering style, oversized shine, and bold statement glam energy",
+      "Luxury Watch": "luxury watch with polished metal case, glossy face detail, and refined high-end wrist styling",
+      "Luxury quilted bag": "luxury quilted bag with padded diamond texture, polished chain or hardware detail, and premium handbag styling",
+      "Monogram belt": "monogram belt with designer-inspired buckle and patterned strap, polished waist styling, and luxury outfit detail",
+      "Nose Ring": "nose ring accessory with polished metallic shine, clean placement on the nose, subtle face-framing sparkle, and stylish glam detail",
+      "Oversized Designer Sunglasses": "oversized designer sunglasses with luxury frame detail, glossy lenses, and high-fashion face-framing drama",
+      "Oversized Sunglasses": "oversized sunglasses with large glossy lenses, glamorous face framing, and polished celebrity-style attitude",
+      "Oversized cat-eye glasses": "oversized cat-eye glasses with lifted frame shape, glossy lenses, and dramatic glam styling",
+      "Pearl drops": "pearl drop earrings with dangling luminous pearls, elegant movement, and polished classic glam detail",
+      "Pearl Jewelry": "pearl jewelry with luminous pearl shine, elegant classic styling, and polished feminine luxury detail",
+      "Rhinestone choker": "rhinestone choker with close-fitting sparkle, bright crystal shine, and polished glam neckline detail",
+      "Rhinestone hoops": "rhinestone hoop earrings with crystal-covered circular shine, bright sparkle, and polished face-framing glam detail",
+      "Silver hoops": "silver hoop earrings with cool metallic shine, smooth circular shape, and polished modern glam styling",
+      "Silver Grillz": "silver grillz with polished chrome tooth jewelry, bright reflective shine, and bold luxury streetwear detail",
+      "Smart Watch": "smart watch accessory with sleek tech face, polished band, and modern lifestyle styling",
+      "Stacked Bracelets": "stacked bracelets with layered wrist jewelry, mixed shine, and polished accessory depth",
+      "Stacked Diamond Bracelets": "stacked diamond bracelets with multiple sparkling bands, iced-out shine, and luxury wrist detail",
+      "Star earrings": "star earrings with playful celestial shape, reflective sparkle, and polished glam accent detail",
+      "Statement Necklace": "statement necklace with bold focal design, polished sparkle, and dramatic neckline styling",
+      "Statement sunglasses": "statement sunglasses with bold frame shape, glossy lenses, and confident high-fashion attitude",
+      "Tiny shoulder bag": "tiny shoulder bag with compact luxury shape, polished hardware, and cute fashion-forward accessory detail"
+    };
+    const poseGuidance = {
+      "Arms Crossed Confidently": "arms crossed confidently with strong posture, direct attitude, and polished fashion-editorial presence",
+      "Crouching Pose": "crouching pose with balanced low stance, full-body readability, confident gaze, and dynamic streetwear energy",
+      "DJ booth hand on mixer": "DJ booth pose with one hand on the mixer, engaged performance energy, and polished music-scene confidence",
+      "Full-body runway strut": "full-body runway strut with one foot forward, confident hip movement, visible head-to-toe styling, and runway polish",
+      "Hair Flip": "hair flip pose with hair in motion, lifted chin, glossy movement, and confident glam attitude",
+      "Hand On Hip": "hand on hip pose with angled stance, confident waist placement, and polished main-character energy",
+      "Hand in pocket": "hand-in-pocket pose with relaxed confidence, casual fashion attitude, and clean full-body readability",
+      "Holding phone selfie": "holding phone selfie pose with glossy smartphone visible, confident gaze, and modern social-media glam energy",
+      "Leaning on luxury steps": "leaning on luxury steps pose with relaxed seated or standing balance, polished fashion posture, and premium editorial mood",
+      "Lollipop pose": "lollipop pose with playful hand-to-mouth candy prop styling, cute expression, and glossy pop-glam attitude",
+      "Looking Over Shoulder": "looking over shoulder pose with turned torso, backward glance, elegant neck line, and confident editorial drama",
+      "One hand on glasses": "one hand adjusting glasses pose with stylish face-framing gesture, confident gaze, and polished accessory focus",
+      "Power Stance": "power stance with feet planted, shoulders strong, confident posture, and bold full-body fashion presence",
+      "Seated cross-legged": "seated cross-legged pose with relaxed stylish posture, full outfit visibility, and polished editorial composition",
+      "Sitting Elegantly": "sitting elegantly with graceful posture, refined hand placement, polished legs and outfit visibility, and luxury portrait poise",
+      "Soft hand on cheek": "soft hand on cheek pose with gentle face-framing gesture, dreamy expression, and polished beauty focus",
+      "Stack of Money To Ear": "stack of money held to the ear pose with playful luxury flex energy, confident expression, and polished social-media glam attitude",
+      "Standing with hips angled": "standing pose with hips angled, flattering full-body silhouette, confident fashion posture, and polished glam styling"
+    };
+    const backgroundGuidance = {
+      "Candy pink bedroom": "candy pink bedroom background with glossy decor, soft feminine room styling, playful color accents, and polished depth",
+      "Clean white studio": "clean white studio background with seamless bright backdrop, crisp shadows, and premium editorial clarity",
+      "Cotton Candy Clouds": "cotton candy clouds background with fluffy pastel pink and blue clouds, dreamy sky softness, and glossy fantasy glow",
+      "Designer runway": "designer runway background with illuminated catwalk, audience depth, fashion-show energy, and polished luxury atmosphere",
+      "Disco Ball Reflection": "disco ball reflection background with mirrored sparkle patterns, dance-floor shimmer, and glossy party-light atmosphere",
+      "Dreamy Clouds": "dreamy clouds background with soft cloud layers, ethereal glow, and gentle pastel depth",
+      "Fashion Runway": "fashion runway background with long catwalk perspective, bright runway lights, and high-fashion editorial drama",
+      "Flower Garden": "flower garden background with colorful blooming flowers, lush natural detail, and polished romantic outdoor styling",
+      "Glitter Explosion": "glitter explosion background with sparkling particles, reflective confetti shine, and bold celebratory glam energy",
+      "Glamorous Vanity Room": "glamorous vanity room background with lit mirror, beauty-table details, luxe decor, and polished dressing-room atmosphere",
+      "High-End Boutique": "high-end boutique background with luxury racks, polished display lighting, refined shopping atmosphere, and premium retail depth",
+      "Luxury Car Interior": "luxury car interior background with leather seats, glossy dashboard detail, ambient light, and upscale lifestyle mood",
+      "Luxury Mall": "luxury mall background with polished floors, designer storefronts, bright atrium lighting, and premium shopping atmosphere",
+      "Luxury boutique wall": "luxury boutique wall background with refined display surface, polished fashion-store detail, and high-end editorial simplicity",
+      "Neon City Lights": "neon city lights background with glowing signs, reflective streets, vibrant nightlife color, and cinematic urban depth",
+      "Neon city sunset": "neon city sunset background with glowing skyline, warm sunset color, nightlife accents, and glossy urban atmosphere",
+      "Nightclub stage lights": "nightclub stage lights background with colorful beams, bokeh crowd depth, and vibrant performance energy",
+      "Pastel sparkle backdrop": "pastel sparkle backdrop with soft candy color, tiny star highlights, and glossy dreamy studio polish",
+      "Pink Gradient": "pink gradient background with smooth tonal fade, soft studio depth, and polished feminine glam simplicity",
+      "Private Jet Cabin": "private jet cabin background with cream leather seats, luxury aviation details, soft window light, and elite travel mood",
+      "Red Carpet": "red carpet background with event ropes, flashbulb sparkle, celebrity-arrival energy, and polished glamorous atmosphere",
+      "Retro vaporwave grid": "retro vaporwave grid background with neon perspective lines, saturated 80s/90s color, and glossy digital nostalgia",
+      "Rose Garden": "rose garden background with lush rose blooms, romantic floral depth, soft luxury color, and polished outdoor glamour",
+      "Skyline at Sunset": "skyline at sunset background with glowing city silhouette, orange-pink sky, reflective atmosphere, and cinematic evening depth",
+      "Soft gradient studio": "soft gradient studio background with smooth color transition, clean subject focus, and polished premium lighting",
+      "Spring Meadow": "spring meadow background with fresh green grass, soft wildflowers, airy daylight, and polished nature-glam mood",
+      "Stage Spotlight": "stage spotlight background with dramatic focused beam, dark performance depth, and polished star-on-stage energy",
+      "Translucent": "translucent background with sheer glassy layers, soft see-through glow, and ethereal polished depth",
+      "Tropical Paradise": "tropical paradise background with palm greenery, bright resort colors, warm sunlight, and polished vacation-glam atmosphere",
+      "Tropical waterfront city": "tropical waterfront city background with palm silhouettes, reflective water, city lights, and warm glossy vacation energy",
+      "VIP Lounge": "VIP lounge background with plush seating, moody luxury lighting, velvet-rope exclusivity, and premium nightlife atmosphere",
+      "White Background": "white background with clean seamless simplicity, crisp subject separation, and premium studio polish"
+    };
+    const cameraAngleGuidance = {
+      "Bird's Eye View": "bird's-eye view camera angle from directly above, top-down composition, clean overhead framing, and premium editorial layout",
+      "Clean full-body front view": "clean full-body front-view camera angle with straight-on framing, clear head-to-toe visibility, and balanced fashion composition",
+      "Editorial three-quarter angle": "editorial three-quarter camera angle with flattering depth, polished pose visibility, and premium magazine-style composition",
+      "Eye-level fashion shot": "eye-level fashion camera angle with natural perspective, confident subject connection, and clean glam portrait balance",
+      "Full-body low angle": "full-body low camera angle with powerful upward perspective, elongated fashion silhouette, and bold confident presence",
+      "Full-body runway perspective": "full-body runway perspective with catwalk depth, forward motion, and polished fashion-show framing",
+      "Gentle close portrait override": "gentle close portrait camera angle with soft face-focused framing, polished beauty detail, and intentional crop control",
+      "Knee-level sneaker emphasis": "knee-level camera angle emphasizing shoes and lower outfit styling while keeping the fashion pose readable",
+      "Over-the-shoulder selfie angle": "over-the-shoulder selfie camera angle with modern social-media framing, visible pose energy, and glossy lifestyle composition",
+      "Slight side profile": "slight side-profile camera angle with elegant facial contour, dimensional pose, and polished editorial framing",
+      "Wide scene establishing shot": "wide scene establishing camera angle with full environment visibility, balanced subject placement, and cinematic composition"
+    };
+    const ornateElementGuidance = {
+      "Angel Wings": "angel wing ornate elements with soft feathered shapes, luminous fantasy detail, and polished heavenly glam accents",
+      "Bows": "bow ornate elements with cute tied ribbon shapes, glossy fabric loops, and polished feminine decorative detail",
+      "Bunny Ears": "bunny ear ornate elements with playful soft ear shapes, cute glam styling, and polished whimsical detail",
+      "Butterflies": "butterfly ornate elements with delicate wings, soft colorful sparkle, and graceful floating decorative accents",
+      "Butterfly accents": "butterfly accents with delicate wing shapes, sparkling color detail, and polished dreamy glam placement",
+      "Candy Lollipops": "candy lollipop ornate elements with glossy sweet-shop colors, playful swirl shapes, and polished pop-glam detail",
+      "Carrots": "carrot ornate elements with cute orange-and-green shapes, playful garden charm, and polished whimsical detail",
+      "Cherries and Fruit": "cherries and fruit ornate elements with juicy glossy color, playful retro charm, and polished sweet decorative accents",
+      "Chrome jewelry shine": "chrome jewelry shine ornate detail with reflective metallic highlights, polished sparkle, and luxury accessory glow",
+      "Clouds and Rainbows": "clouds and rainbows ornate elements with soft fluffy clouds, bright rainbow arcs, and dreamy pastel glam detail",
+      "Crowns": "crown ornate elements with regal points, metallic shine, gemstone sparkle, and polished queen-like decorative impact",
+      "Crystal trim": "crystal trim ornate detail with tiny reflective stones, bright sparkle edges, and polished luxury finishing",
+      "Daisies and Petals": "daisies and petals ornate elements with fresh floral shapes, soft pretty color, and polished spring-glam detail",
+      "Dripping glossy text": "dripping glossy text ornate detail with liquid shine, dimensional drip shapes, and polished street-glam graphic energy",
+      "Feathers": "feather ornate elements with soft layered plumes, airy texture, and polished elegant glam movement",
+      "Fire Flames": "fire flame ornate elements with vivid flame shapes, warm glow, and polished bold energetic accents",
+      "Flowers": "flower ornate elements with blooming petals, lush color, and polished feminine botanical accents",
+      "Gold chain details": "gold chain details with metallic links, warm luxury shine, and polished street-glam decorative accents",
+      "Heart charms": "heart charm ornate elements with glossy heart shapes, cute sparkle, and polished romantic decorative detail",
+      "Hearts": "heart ornate elements with glossy romantic shapes, bright cute sparkle, and polished sweet glam accents",
+      "Ice Crystals": "ice crystal ornate elements with sharp frosty facets, cool shimmer, and polished frozen sparkle detail",
+      "Leopard Print Accents": "leopard print accents with chic spotted patterning, fashion-forward contrast, and polished wild-glam detail",
+      "Lightning Bolts": "lightning bolt ornate elements with sharp electric shapes, bright glow, and polished high-energy pop detail",
+      "Lotus Flowers": "lotus flower ornate elements with layered petals, serene botanical elegance, and polished luxe floral detail",
+      "Luxury quilting": "luxury quilting ornate detail with padded diamond texture, refined stitch depth, and polished designer-inspired finish",
+      "Monogram-inspired pattern": "monogram-inspired pattern with repeated luxury-style motifs, polished decorative rhythm, and premium fashion texture",
+      "Mushrooms and Toadstools": "mushrooms and toadstools ornate elements with cute fantasy shapes, soft woodland color, and polished whimsical detail",
+      "Paw Prints": "paw print ornate elements with tiny rounded print shapes, playful cute accents, and polished decorative placement",
+      "Pearl accents": "pearl accents with luminous bead shine, soft classic elegance, and polished feminine luxury detail",
+      "Pearls and Beads": "pearls and beads ornate elements with luminous round details, layered sparkle, and polished jewelry-like decoration",
+      "Ribbons and Lace": "ribbons and lace ornate elements with delicate tied ribbons, lace texture, and polished romantic glam detail",
+      "Rhinestone borders": "rhinestone borders with sparkling crystal edging, polished frame detail, and luxury shine around the composition",
+      "Roses": "rose ornate elements with layered romantic petals, rich floral color, and polished glam botanical detail",
+      "Snowflakes": "snowflake ornate elements with delicate icy geometry, cool sparkle, and polished winter fantasy detail",
+      "Sparkles": "sparkle ornate elements with bright star-like glints, glossy highlight points, and polished magical shine",
+      "Stars": "star ornate elements with clean celestial points, glossy shine, and polished dreamy decorative accents",
+      "Stars and Moons": "stars and moons ornate elements with celestial shapes, dreamy night-sky sparkle, and polished magical glam detail",
+      "Swirls and Flourishes": "swirls and flourishes ornate elements with elegant curling lines, decorative motion, and polished ornamental glam detail",
+      "Tiny Gems and Diamonds": "tiny gems and diamonds ornate elements with faceted sparkle, scattered crystal shine, and polished luxury detail",
+      "Vines and Leaves": "vines and leaves ornate elements with graceful botanical curves, fresh green detail, and polished natural glam accents"
+    };
+    const fontStyleGuidance = {
+      "Bold Script Font": "bold script typography with thick flowing strokes, glamorous curves, strong contrast, and polished readability",
+      "Cursive Script Font": "elegant cursive script typography with connected letters, smooth loops, feminine glam flourish, and clean readability",
+      "Graffiti Tag Font": "graffiti tag typography with quick handstyle marks, urban paint-marker texture, energetic motion, and readable polished edges",
+      "Block Lettering Font": "clean block lettering typography with squared forms, strong structure, poster-style impact, and crisp readability",
+      "Bubble Lettering Font": "rounded bubble lettering with inflated glossy shapes, playful pop energy, soft highlights, and clear readability",
+      "Retro Cursive Font": "retro cursive typography with nostalgic swashes, vintage sign-painter polish, glam throwback energy, and readable letterforms",
+      "Modern Display Font": "modern display typography with clean statement shapes, contemporary brand polish, editorial balance, and high-end readability",
+      "Street Graffiti Font": "street graffiti typography with layered spray-paint styling, bold urban rhythm, polished outlines, and readable composition",
+      "Heavy Block Font": "heavy block typography with thick letter weight, strong visual punch, bold headline presence, and clean crisp edges",
+      "Playful Cartoon Font": "playful cartoon typography with bouncy shapes, expressive friendly curves, colorful pop-art energy, and polished readability",
+      "Rounded Bubble Font": "soft rounded bubble typography with puffy forms, glossy highlights, cute luxe charm, and smooth readable shapes",
+      "Stylized Street Font": "stylized street typography blending graffiti attitude with display lettering, edgy polished urban glam, and clear readability",
+      "Handwritten Brush Font": "handwritten brush typography with visible stroke texture, flowing movement, personal creative energy, and polished lettering",
+      "Condensed Display Font": "condensed display typography with tall narrow forms, high-fashion editorial impact, strong vertical rhythm, and clean readability",
+      "Soft Rounded Font": "soft rounded typography with gentle curves, smooth approachable shapes, polished friendly styling, and clean readability"
+    };
+    const materialStyleGuidance = {
+      "Airbrushed Glossy Finish": "airbrushed glossy finish with smooth polished gradients, soft reflective highlights, and flawless glam surface detail",
+      "Anodized Aluminum Texture": "anodized aluminum texture with colored metallic sheen, smooth industrial polish, and refined reflective surface detail",
+      "Brushed Metal Finish": "brushed metal finish with fine directional grain, muted metallic reflection, and polished premium hardware texture",
+      "Ceramic Glazed Finish": "ceramic glazed finish with smooth enamel-like shine, rounded highlights, and polished handcrafted surface depth",
+      "Chrome Metallic Finish": "chrome metallic finish with mirror-like silver reflection, crisp highlights, and polished futuristic shine",
+      "Crystalline Gemstone Texture": "crystalline gemstone texture with faceted sparkle, translucent depth, and polished jewel-like reflective detail",
+      "Embroidered Patch Texture": "embroidered patch texture with stitched thread detail, raised fabric edges, and polished applique-style finish",
+      "Flocked Fuzzy Finish": "flocked fuzzy finish with soft velvety fibers, tactile matte texture, and polished plush decorative surface",
+      "Frosted Glass Effect": "frosted glass effect with translucent blur, soft diffused highlights, and polished cool glassy finish",
+      "Glitter Texture": "glitter texture with dense sparkling particles, reflective specks, and polished glam shimmer across the surface",
+      "Glossy Plastic": "glossy plastic material with smooth molded shine, rounded highlights, and polished toy-like luxury surface",
+      "Gradient Silk Texture": "gradient silk texture with smooth color transition, soft fabric sheen, and polished flowing textile detail",
+      "Holographic Shine": "holographic shine with iridescent rainbow reflections, shifting color highlights, and polished futuristic glow",
+      "Iridescent Color-Shift": "iridescent color-shift finish with pearly rainbow angle changes, luminous surface movement, and polished fantasy shine",
+      "Lacquered Shine": "lacquered shine with deep glossy coating, smooth reflective surface, and polished high-end enamel finish",
+      "Leather Embossed Texture": "leather embossed texture with raised stamped pattern, soft grain detail, and polished luxury leather finish",
+      "Liquid Ink Swirl Texture": "liquid ink swirl texture with flowing marbled color, glossy fluid movement, and polished artistic surface detail",
+      "Liquid Mirror Finish": "liquid mirror finish with ultra-reflective molten shine, smooth chrome-like flow, and polished high-gloss depth",
+      "Metallic Foil Texture": "metallic foil texture with crinkled reflective highlights, bright metal shine, and polished luxe graphic surface",
+      "Neon Glow Texture": "neon glow texture with vivid luminous edges, saturated electric color, and polished radiant light effect",
+      "Pearl Luster Finish": "pearl luster finish with soft opalescent glow, creamy reflective highlights, and polished elegant surface sheen",
+      "Plush Fuzzy Texture": "plush fuzzy texture with soft thick fibers, cozy tactile depth, and polished cute luxury surface detail",
+      "Rubber Matte Finish": "rubber matte finish with soft non-reflective texture, smooth flexible surface, and polished modern tactile detail",
+      "Satin Smooth Texture": "satin smooth texture with subtle soft sheen, refined fabric highlights, and polished elegant surface flow",
+      "Sequin Sparkle Texture": "sequin sparkle texture with overlapping reflective discs, bright flashes, and polished party-glam surface detail",
+      "Silk Fabric Texture": "silk fabric texture with smooth luxurious weave, soft luminous highlights, and polished flowing textile shine",
+      "Soft Candy Texture": "soft candy texture with smooth sugary color, rounded glossy surface, and polished sweet pastel finish",
+      "Speckled Granite Texture": "speckled granite texture with tiny mineral flecks, polished stone depth, and refined natural surface pattern",
+      "Velvet Soft Texture": "velvet soft texture with rich plush nap, deep color absorption, and polished luxury fabric finish",
+      "Vinyl Sticker Texture": "vinyl sticker texture with smooth peel-and-stick shine, crisp printed edges, and polished glossy graphic finish"
+    };
+    const compositionStyleGuidance = {
+      "360 Degree Wraparound Text": "360-degree wraparound text composition with lettering circling the subject or object, clean readable flow, and polished sticker-style layout",
+      "Asymmetrical Balance": "asymmetrical balanced composition with intentionally offset elements, visual harmony, and polished editorial spacing",
+      "Balanced Decorative Spacing": "balanced decorative spacing with evenly distributed accents, clean breathing room, and polished readable layout",
+      "Centered Composition": "centered composition with the main subject or wordmark placed clearly in the middle, strong focus, and polished symmetry",
+      "Circular Badge Design": "circular badge design composition with round emblem framing, centered text or subject, and polished sticker-ready structure",
+      "Clean Isolated Object": "clean isolated object composition with a single clear focal item, minimal surrounding clutter, and polished product-style clarity",
+      "Curved Arc Composition": "curved arc composition with text or elements arranged in a smooth arch, graceful flow, and polished decorative balance",
+      "Diagonal Stretched Text": "diagonal stretched text composition with energetic slanted lettering, dynamic movement, and polished graphic impact",
+      "Drop Shadow Effect": "drop shadow composition effect with lifted layered depth, clean separation from the background, and polished dimensional readability",
+      "Floating Bubble Composition": "floating bubble composition with rounded elements suspended around the subject, playful spacing, and polished airy depth",
+      "Frame Within Frame Design": "frame within frame design with nested borders or inner picture-frame structure, layered focus, and polished premium composition",
+      "Grid Geometric Layout": "grid geometric layout with clean modular alignment, structured spacing, and polished modern graphic order",
+      "Horizontal Banner Layout": "horizontal banner layout with wide left-to-right arrangement, strong readable text flow, and polished header-style structure",
+      "Large Central Wordmark": "large central wordmark composition with oversized main lettering as the focal point, clean hierarchy, and polished brand-ready impact",
+      "Layered Depth Effect": "layered depth effect composition with foreground and background overlaps, dimensional stacking, and polished 3D-like separation",
+      "Organic Flowing Arrangement": "organic flowing arrangement with natural curved placement, soft movement, and polished decorative rhythm",
+      "Outlined Die-Cut Shape": "outlined die-cut shape composition with bold sticker outline, clean cutout silhouette, and polished collectible decal finish",
+      "Overlapping Layered Text": "overlapping layered text composition with stacked letter forms, readable overlap, and polished dimensional typography",
+      "Perspective Depth Layout": "perspective depth layout with elements receding into space, angled dimensional framing, and polished visual depth",
+      "Radial Burst Pattern": "radial burst pattern composition with elements radiating from the center, energetic focus, and polished starburst impact",
+      "Scattered Playful Arrangement": "scattered playful arrangement with intentionally placed loose elements, cute spontaneous energy, and polished balanced chaos",
+      "Spiral Dynamic Layout": "spiral dynamic layout with elements curling around the focal point, swirling motion, and polished energetic composition",
+      "Split Two-Tone Layout": "split two-tone layout with divided color fields, clean contrast, and polished graphic balance",
+      "Stacked Text Layout": "stacked text layout with words arranged vertically in clear tiers, strong readability, and polished poster-style hierarchy",
+      "Symmetrical Perfect Mirror": "symmetrical perfect mirror composition with matching left and right balance, centered alignment, and polished formal harmony",
+      "Tight Sticker Composition": "tight sticker composition with compact elements close to the focal point, bold readable silhouette, and polished decal-ready shape",
+      "Vertical Tower Layout": "vertical tower layout with tall stacked arrangement, upward visual flow, and polished slim composition",
+      "Wavy Undulating Composition": "wavy undulating composition with flowing wave-like text or decorative movement, soft rhythm, and polished playful energy",
+      "White Border Sticker Cutout": "white border sticker cutout composition with a clean white outline around the subject or object, crisp decal edge, and polished sticker finish",
+      "Zig-Zag Dynamic Flow": "zig-zag dynamic flow composition with sharp alternating movement, energetic visual path, and polished graphic rhythm"
+    };
+    const explicitGuidanceByCategory = {
+      ageGroup: ageGroupGuidance,
+      artStyle: artStyleGuidance,
+      background: backgroundGuidance,
+      bodyType: bodyTypeGuidance,
+      cameraAngle: cameraAngleGuidance,
+      compositionStyle: compositionStyleGuidance,
+      eyeColor: eyeColorGuidance,
+      eyebrows: eyebrowGuidance,
+      facialExpression: facialExpressionGuidance,
+      facialFeatures: facialFeatureGuidance,
+      fontStyle: fontStyleGuidance,
+      hairColor: hairColorGuidance,
+      hairstyle: hairstyleGuidance,
+      makeup: makeupStyleGuidance,
+      materialStyle: materialStyleGuidance,
+      nails: nailStyleGuidance,
+      ornateElements: ornateElementGuidance,
+      pose: poseGuidance,
+      skinTone: skinToneGuidance,
+      tattooBodyArt: tattooBodyArtGuidance,
+      textArtStyle: textArtStyleGuidance,
+      textColorPalette: textColorPaletteGuidance,
+      womenOutfit: womenOutfitGuidance,
+      womenShoes: womenShoeGuidance,
+      womenAccessories: womenAccessoryGuidance
+    };
+    const categoryOutputGuidance = {
+      gender: value => `${value.toLowerCase()} character presentation`,
+      ethnicity: value => `${value} ethnicity or heritage represented respectfully through the character design`,
+      eyebrows: value => `${value} with polished brow grooming, clean shape, and glam facial framing`,
+      hairColor: value => `${value} hair color with dimensional shine, glossy highlights, and polished salon finish`,
+      hairstyle: value => `${value} hairstyle with sculpted shape, clean strand detail, and glossy fashion-doll movement`,
+      womenOutfit: value => `${value} styled as a premium fashion look with clean fit, glossy texture, and coordinated glam details`,
+      womenShoes: value => `${value} with crisp footwear detail, glossy finish, and coordinated fashion styling`,
+      womenAccessories: value => `${value} as a polished accessory detail with luxury shine and clean placement`,
+      pose: value => `${value} with confident body language, full-body readability, and fashion-editorial polish`,
+      bodyFraming: value => `${value} composition with clear subject visibility and intentional crop control`,
+      background: value => `${value} background rendered with glossy depth, clean scene design, and premium visual polish`,
+      lighting: value => `${value} with controlled highlights, dimensional glow, and polished cinematic illumination`,
+      colorPalette: value => `${value} color palette with coordinated saturation, clean contrast, and premium glam harmony`,
+      compositionStyle: value => `${value} composition with clear layout direction, polished spacing, and strong readable design`,
+      effects: value => `${value} applied tastefully as a high-end finishing effect without overpowering the subject`,
+      materialStyle: value => `${value} material style with polished texture, clear surface detail, and premium finish`,
+      ornateElements: value => `${value} used as refined decorative detail with sparkle, texture, and luxury finish`,
+      fontStyle: value => `${value} typography styled cleanly, readable, glossy, and matched to the overall glam theme`,
+      textArtStyle: value => `${value} for the visible text or lettering, with polished graphic-art styling and readable design`,
+      textColorPalette: value => `${value} text color palette applied to the visible lettering with clean contrast and polished readability`,
+      textOption: value => value === "No visible text"
+        ? "no visible text or lettering in the final image"
+        : `visible text reading "${value}" placed cleanly as a premium graphic element in its own open space, not covering the face, body, outfit, shoes, hands, or key accessories`
+    };
+    function readJsonStorage(key, fallback) {
+      try {
+        return JSON.parse(localStorage.getItem(key) || JSON.stringify(fallback));
+      } catch {
+        return fallback;
+      }
+    }
+
+    const recentSignatures = [];
+    const customOptionStorageKey = "glamGlowCustomOptions";
+    const promptHistory = readJsonStorage("glamGlowPromptHistory", []);
+    const customOptionsByCategory = readJsonStorage(customOptionStorageKey, {});
+
+    function c(id, title, options, config = {}) {
+      return {
+        id,
+        title,
+        options,
+        custom: config.custom !== false,
+        gender: config.gender || "all",
+        multi: Boolean(config.multi),
+        open: Boolean(config.open),
+        preserveOrder: Boolean(config.preserveOrder)
+      };
+    }
+
+    const categories = [
+      c("preset", "Presets", [
+        "None",
+        "It Girl",
+        "Street Glam Fierce",
+        "Edgy Art",
+        "Sporty Vibe",
+        "Cozy Queen",
+        "Boss Babe",
+        "Gamer Vibes",
+        "Glam Diva",
+        "Party Babe",
+        "Glam Girl",
+      "Kawaii Vibe"
+      ], { custom: false, open: true, preserveOrder: true }),
+      c("artStyle", "Art Style", ["None", "3D glam doll render", "18K Digital Illustration", "Air Brushed Cartoon Baddie", "Airbrushed pop illustration", "Anime Glamor", "Candy-coated editorial render", "Cartoon", "Cinematic animated fashion doll", "Comic Book", "Exaggerated Chibi Style", "Fashion Illustration", "Glossy 3D Bratz", "Glossy 3D Chibi Illustration", "Glossy 3D Chibi Mixed Bratz", "Glossy chibi luxury portrait", "Hyper Realistic Airbrushed Baddie", "Hyper Realistic Chibi Style", "Hyper-realistic stylized doll", "Kawaii Luxe", "Neon Y2K pop art", "Pop Art Glam", "Premium fashion caricature", "Retro Vintage", "Runway cartoon realism", "Sleek digital painting", "Thick Lined Coloring Page", "Vintage Pin Up Glam", "Y2K Aesthetic"], { open: true }),
+      c("gender", "Gender", ["None", "Female", "Male"], { open: true, preserveOrder: true }),
+      c("ageGroup", "Age Group", ["None", "Baby", "Toddler", "Child", "Preteen", "Teen", "Adolescent", "Young Adult", "Adult", "Elderly"], { open: true, preserveOrder: true }),
+      c("bodyType", "Body Type", ["None", "Slim Petit", "Soft & Round", "Small and Cute", "Curvy", "Curvy & Voluptuous", "Toned", "Athletic", "Fit", "Muscular", "Hourglass", "Pear Shaped", "Plus Size", "Tall and Lanky", "Tall & Lean", "Petite"], { open: true }),
+      c("ethnicity", "Ethnicity", ["None", "African American", "Afro-Latina", "Asian", "Black Caribbean", "Black British", "Brazilian", "Dominican", "Ethiopian", "European", "Ghanaian", "Haitian", "Hispanic", "Indigenous", "Jamaican", "Kenyan", "Latina", "Mixed heritage", "Nigerian", "Puerto Rican", "South African", "Trinidadian", "West African"], { open: true }),
+      c("skinTone", "Skin Tone", ["None", "Caramel", "Caramel brown", "Cinnamon brown", "Deep chocolate", "Deep espresso", "Fair porcelain", "Golden brown", "Golden tan", "Honey bronze", "Mahogany glow", "Rich chocolate", "Rich cocoa", "Rosy pink", "Toffee brown", "Vitiligo", "Warm almond", "Warm chestnut", "Warm honey"], { open: true }),
+      c("facialExpression", "Facial Expression", ["None", "Bold fearless", "Bossy calm stare", "Confident soft smile", "Dreamy gaze", "Dreamy side glance", "Fierce determination", "Flirty smirk", "Gentle smile", "Glamorous smile", "Glossy pout", "Playful wink", "Serene elegance", "Serious runway gaze", "Soft glam smile", "Sultry pouty", "Sweet doll expression", "Sweet innocent"]),
+      c("facialFeatures", "Facial Features", ["None", "Almond eyes", "Beauty Marks", "Button nose", "Cat eyes", "Defined cheekbones", "Defined jaw line", "Dimples", "Doe Eyes", "Freckles", "Full glossy lips", "Full lips", "Glossy Lips", "Heart-shaped face", "High blush glow", "High Cheekbones", "Long Lashes", "Pouty Lips", "Rounded doll cheeks", "Rounded Eyes", "Small Nose", "Soft freckles", "Symmetrical glam face", "Thick Eyelashes", "Unique beauty mark"], { multi: true }),
+      c("eyeColor", "Eye Color", ["None", "Amber", "Aqua blue", "Black", "Blue", "Brown", "Chocolate brown", "Emerald green", "Golden hazel", "Green", "Hazel", "Honey brown", "Hunter Green", "Icy blue", "Lavender", "Light black Heterochromia", "Neon green", "Pink", "Purple", "Violet", "Yellow"]),
+      c("eyebrows", "Eyebrows", ["None", "Arched feather brows", "Bold sculpted brows", "Clean brushed brows", "Dark laminated brows", "Glossy defined brows", "High glam brows", "Natural soft brows", "Precise angled brows", "Thick doll brows", "Thin Y2K brows", "Arched Eyebrows", "Natural Eyebrows", "Dramatic Eyebrows", "Thick Eyebrows"]),
+      c("hairColor", "Hair Color", ["None", "Black with hot pink streaks", "Blonde", "Caramel Brown", "Chocolate Brown", "Chocolate Brown with Blonde Honey Pieces", "Copper", "Copper red", "Cotton Candy Blue", "Cotton Candy Pink", "Deep Purple", "Emerald Green", "Fiery Red", "Forest Green", "Ginger", "Golden blonde", "Highlights & Lowlights", "Holographic", "Honey Blonde", "Honey blonde", "Hot Pink", "Jet black", "Lavender Purple", "Neon rainbow", "Ombre Highlights", "Pastel Pink", "Pink and black ombre", "Platinum Blonde", "Rainbow", "Rainbow Ombre", "Rich Brunette", "Rose Gold", "Rose pink", "Royal Blue", "Silver", "Strawberry Blonde"]),
+      c("hairstyle", "Hair Style", ["None", "Beach Waves", "Blow Out Style", "Blunt silk press", "Bob Cut", "Bouncy side-part waves", "Boxed Braids", "Braided Crown", "Corn Rows", "Curly high ponytail", "Double buns", "Elegant Updo", "Extra-long beach waves", "Faux Locs", "French Braids", "Fulani Braids", "Glamour Waves", "Goddess Braids", "Golden box braids", "Half-up ponytail", "High Ponytail", "High pigtails", "High Top Fade", "Jumbo Braids", "Layered Cut", "Layered curls", "Locs", "Long Bob", "Long Flowing Waves", "Low Cut Fade", "Low Cut Fade w/ Lined Beard", "Low Cut Fade w/Designs", "Messy Bun with Baby Hairs", "Micro Braids", "Pigtails", "Pixie Cut", "Pixie with Waves", "Afro", "Big Afro", "Afro Taper", "Flat Top", "Short styled waves", "Side-swept Bangs", "Sleek Bun", "Sleek Straight", "Slicked Back Ponytail", "Soft Waves", "Space Buns", "Spiral Curls", "Textured Layers", "Twisted Braids", "Two Strand Twist", "Voluminous Curls", "Artistic swooped edges", "Clean laid edges", "Delicate baby hairs", "Glossy sculpted edges", "Heart swoop edges", "Minimal soft edges", "Rhinestone accented edges", "Sideburn swirls", "Sleek gelled edges", "Wave-pattern edges"], { multi: true }),
+      c("makeup", "Makeup Style", ["None", "Blush", "Brick Blush", "Candy pink glam", "Chrome shimmer lids", "Contoured Face", "Cut Crease", "Cut-crease neon liner", "Dewy Skin", "Double Winged Liner", "Emerald eye glow", "Eyeshadow Gradient", "Full Matte Face", "Glitter eyeshadow", "Glossy Lips", "Glossy nude glam", "Hot pink blush", "Lavender halo eye", "MAC Red Matte Lip", "Ombred Lips", "Peachy Blush", "Pink Blush", "Pink Lips", "Rainbow eye shadow", "Soft bronze glam", "White inner-corner highlight", "Winged Liner", "Cat-eye lashes", "Dramatic doll lashes", "Fluttery glam lashes", "Full mink-style lashes", "Lower-lash accents", "Neon tinted lashes", "Soft wispy lashes", "Spiky Y2K lashes", "Thick runway lashes", "Ultra-long lashes"], { gender: "female", multi: true }),
+      c("nails", "Nails", ["None", "Chrome almond nails", "Coffin", "Extra-long neon nails", "French tip nails", "Glossy white nails", "Hot pink coffin nails", "Lime green stilettos", "Pink Diamond Studded Nails", "Rainbow acrylic nails", "Rhinestone nails", "Short glossy square nails", "Square Nails", "Stiletto Nails"], { gender: "female" }),
+      c("womenOutfit", "Outfit Style", ["None", "Bodycon Dress", "Boho Chic Ensemble", "Brown velour tracksuit", "Candy striped crop top", "Cargo Pants & Crop Top", "Cargo Pants & Tube Top", "Chiffon Maxi Dress", "Corset & Distressed Jeans", "Corset & Pencil Skirt", "Cropped pink hoodie and denim shorts", "Denim Jacket & Shorts", "Designer Burberry Outfit & Shoes", "Designer Chanel Outfit & Shoes", "Designer Gucci Loafers & Outfit", "Designer Louis Vuitton Outfit & Shoes", "Designer Louboutin Dress & Heels", "Designer Prada Outfit & Shoes", "Designer Tom Ford Outfit & Shoes", "Designer Valentino Outfit & Shoes", "Designer Versace Outfit & Shoes", "Designer-inspired white tracksuit", "Glam Streetwear", "Gold runway varsity set", "Graphic Tee & Cargo Pants", "Graphic Tee & Distressed Jeans", "Graphic Tee & Jeans", "Graphic tee and joggers", "High Waisted Shorts & Tube Top", "Hot pink tennis skirt set", "Leather Jacket & Distressed Jeans", "Linen Flare-Leg Suit", "Linen Short Set", "Luxury monogram lounge set", "Neon sweatshirt and gold jewelry", "Nike Dunk Outfit", "Oversized Blazer / Tube Top & Distressed Jeans", "Rainbow sporty crop set", "Tie-Dye Hoodie & Distressed Jeans"], { open: true, multi: true }),
+      c("womenShoes", "Shoes Style", ["None", "Air Jordan 3", "Air Jordan 11", "Barefoot", "Brown and white high-top sneakers", "Chunky platform sneakers", "Combat Boots", "Crocs", "Croc Slip-In Shoes", "Crystal embellished sneakers", "Fuzzy Slippers", "Gold and white runway sneakers", "Gucci Flip Flops", "Gucci Sneakers", "Hot pink sneakers", "Louboutin Heels", "Louis Vuitton Sneakers", "Luxury monogram sneakers", "Neon high tops", "Nike Air Force 1 Black", "Nike Air Force 1 White", "Nike Air Max", "Nike Dunks", "Nike Slip-In Shoes", "Patent leather sneakers", "Platform Boots", "Rainbow Sequin Ugg Boots", "Retro Jordan 1", "Sneakers", "Strappy Sandals", "Thigh High Boots", "Ugg Boots", "Versace Sandals", "White designer-inspired trainers", "Y2K platform boots"]),
+      c("womenAccessories", "Accessories", ["None", "90's Bamboo Earrings", "90's Bamboo Earrings with Name", "Baseball Cap", "Bangle stack", "Beanie", "Big Straw Sun Hat", "Bum Bag", "Chunky gold hoops", "Chunky Gold Chains", "Cocktail Ring", "Crystal studs", "Dainty Gold Chains", "Designer Belt", "Designer Handbag", "Diamond Ankle Bracelet", "Diamond Earrings", "Diamond Crust Grillz", "Diamond Hoop Earrings", "Diamond Link Necklace", "Diamond Stud Earrings", "Diamond Stud Necklace", "Diamond watch", "Fedora", "Glossy smartphone", "Gold Cuban Link Necklace", "Gold Grillz", "Gold Hoops", "Gold chain necklace", "Heart hoops", "Kentucky Derby Hat", "Large script hoops", "Luxury Watch", "Luxury quilted bag", "Monogram belt", "Nose Ring", "Oversized Designer Sunglasses", "Oversized Sunglasses", "Oversized cat-eye glasses", "Pearl drops", "Pearl Jewelry", "Rhinestone choker", "Rhinestone hoops", "Silver Grillz", "Silver hoops", "Smart Watch", "Stacked Bracelets", "Stacked Diamond Bracelets", "Star earrings", "Statement Necklace", "Statement sunglasses", "Tiny shoulder bag"], { multi: true }),
+      c("colorPalette", "Color Palette", ["None", "Black white and gold", "Candy pink and lime", "Chocolate brown and cream", "Emerald pink and silver", "Gold and white", "Hot pink and black", "Lavender pink and cyan", "Rainbow neon", "Sunset orange and magenta", "Teal purple and rose"]),
+      c("pose", "Pose", ["None", "Arms Crossed Confidently", "Crouching Pose", "DJ booth hand on mixer", "Full-body runway strut", "Hair Flip", "Hand On Hip", "Hand in pocket", "Holding phone selfie", "Leaning on luxury steps", "Lollipop pose", "Looking Over Shoulder", "One hand on glasses", "Power Stance", "Seated cross-legged", "Sitting Elegantly", "Soft hand on cheek", "Stack of Money To Ear", "Standing with hips angled"], { open: true }),
+      c("tattooBodyArt", "Tattoo / Body Art", ["None", "Delicate Ankle Tattoo", "Waist Tattoo", "Lower Back Tattoo", "Sleeve Tattoo", "Chest Tattoo", "Neck Tattoo", "Face Tattoo", "Butterfly Wings Tattoo", "Rose Tattoo", "Zodiac Symbol Tattoo", "Cosmic Tattoo", "Crown Tattoo", "Infinity Symbol Tattoo", "Name Tattoo", "Full Body Art", "Arm Bands", "Tribal Tattoo", "Arabic Tattoo", "Music Note Tattoo", "Tear Drop Tattoo", "Money Bag Tattoo", "Lock & Key Tattoo", "Holographic Body Paint", "Glitter Body Art", "Body Gems & Rhinestones", "Face Gem", "Henna Designs", "Glow in the Dark Paint"], { multi: true }),
+      c("cameraAngle", "Camera Angle", ["None", "Bird's Eye View", "Clean full-body front view", "Editorial three-quarter angle", "Eye-level fashion shot", "Full-body low angle", "Full-body runway perspective", "Gentle close portrait override", "Knee-level sneaker emphasis", "Over-the-shoulder selfie angle", "Slight side profile", "Wide scene establishing shot"]),
+      c("bodyFraming", "Body Framing", ["None", "Full body head to toe", "Full body with feet visible", "Portrait close-up override", "Seated full body", "Three-quarter body override", "Wide full scene"], { preserveOrder: true }),
+      c("background", "Background", ["None", "Candy pink bedroom", "Clean white studio", "Designer runway", "Luxury boutique wall", "Neon city sunset", "Nightclub stage lights", "Pastel sparkle backdrop", "Retro vaporwave grid", "Soft gradient studio", "Tropical waterfront city", "Rose Garden", "Cotton Candy Clouds", "Tropical Paradise", "Glamorous Vanity Room", "Skyline at Sunset", "Fashion Runway", "Pink Gradient", "Dreamy Clouds", "Neon City Lights", "Flower Garden", "White Background", "Translucent", "Luxury Mall", "High-End Boutique", "VIP Lounge", "Spring Meadow", "Luxury Car Interior", "Private Jet Cabin", "Glitter Explosion", "Disco Ball Reflection", "Red Carpet", "Stage Spotlight"]),
+      c("lighting", "Lighting", ["None", "Candy neon glow", "Cinematic rim lighting", "Glossy beauty lighting", "Golden runway spotlight", "Holographic side light", "Luxury studio softbox", "Neon pink and lime lighting", "Purple club lighting", "Sparkle key light", "Warm sunset shine"]),
+      c("effects", "Effects", ["None", "Chrome highlights", "Diamond sparkle accents", "Glossy holographic finish", "Lens sparkle flares", "Neon edge glow", "Pearl shimmer", "Polished airbrush finish", "Rhinestone twinkle", "Soft glitter texture", "Wet gloss shine"]),
+      c("textOption", "Text Option", ["None", "Girls Love Glam", "Glow Mode", "It Girl", "Luxury Energy", "Main Character", "No visible text", "Pretty and Paid", "Queen Vibes", "Scroll Stopper", "Soft Life"]),
+      c("fontStyle", "Font Style", ["None", "Black glossy bubble letters", "Chrome script", "Dripping graffiti letters", "Gold cursive script", "Holographic block letters", "Luxury serif wordmark", "Neon sign typography", "Pink pop sticker type", "Retro grid lettering", "Rhinestone text", "Bold Script Font", "Cursive Script Font", "Graffiti Tag Font", "Block Lettering Font", "Bubble Lettering Font", "Retro Cursive Font", "Modern Display Font", "Street Graffiti Font", "Heavy Block Font", "Playful Cartoon Font", "Rounded Bubble Font", "Stylized Street Font", "Handwritten Brush Font", "Condensed Display Font", "Soft Rounded Font"], { multi: true }),
+      c("materialStyle", "Material Style", ["None", "Airbrushed Glossy Finish", "Anodized Aluminum Texture", "Brushed Metal Finish", "Ceramic Glazed Finish", "Chrome Metallic Finish", "Crystalline Gemstone Texture", "Embroidered Patch Texture", "Flocked Fuzzy Finish", "Frosted Glass Effect", "Glitter Texture", "Glossy Plastic", "Gradient Silk Texture", "Holographic Shine", "Iridescent Color-Shift", "Lacquered Shine", "Leather Embossed Texture", "Liquid Ink Swirl Texture", "Liquid Mirror Finish", "Metallic Foil Texture", "Neon Glow Texture", "Pearl Luster Finish", "Plush Fuzzy Texture", "Rubber Matte Finish", "Satin Smooth Texture", "Sequin Sparkle Texture", "Silk Fabric Texture", "Soft Candy Texture", "Speckled Granite Texture", "Velvet Soft Texture", "Vinyl Sticker Texture"], { multi: true }),
+      c("textArtStyle", "Text Art Style", ["None", "3D Render Style", "Anime Manga Art", "Bold Cartoon Style", "Chibi Cute Character Style", "Contemporary Fine Art", "Cute Kawaii Aesthetic", "Designer Toy Aesthetic", "Digital Illustration Style", "Disney Princess Style", "Futuristic Holographic Art", "Girly Glam Style", "Graffiti Street Art", "High-End CGI Look", "Luxury Graphic Design Look", "Magazine Collage Art", "Maximalist Busy Art", "Minimalist Modern Art", "Neon Glow Cyberpunk", "Oil Painting Art", "Playful Typography Illustration", "Pop Art Comic Book Style", "Psychedelic Trippy Style", "Renaissance Baroque Style", "Retro 90s Digital Art", "Retro Vintage Aesthetic", "Sticker Design Style", "Street Art Inspired Style", "Surreal Dreamlike Style", "Vector Flat Design", "Watercolor Painted Effect"], { multi: true }),
+      c("textColorPalette", "Text Color Palette", ["None", "Black And Gold", "Burgundy And Champagne", "Cheetah Brown Ombre", "Copper And Ivory", "Coral And Cream", "Deep Purple And Pearl", "Deep Teal And Rose", "Dusty Rose And Mauve", "Emerald And Gold", "Forest Green And Cream", "Hot Pink And White", "Lavender And Silver", "Lime Green And Purple", "Magenta And Lime", "Mint And Bubblegum", "Navy And Seafoam", "Navy Blue And Orange", "Neon Colors", "Neon Gradient", "Orange Gradient", "Pastel Mix", "Peachy Pink And White", "Pink And Purple", "Powder Blue And Rose", "Purple And Silver", "Rainbow Gradient", "Red And White", "Sage Green And Blush", "Steel Grey And Gold", "Sunset Orange To Purple", "Sunshine Yellow And Black", "Teal And Pink", "Turquoise And Coral", "Yellow And Hot Pink"], { multi: true }),
+      c("ornateElements", "Ornate Elements", ["None", "Angel Wings", "Bows", "Bunny Ears", "Butterflies", "Butterfly accents", "Candy Lollipops", "Carrots", "Cherries and Fruit", "Chrome jewelry shine", "Clouds and Rainbows", "Crowns", "Crystal trim", "Daisies and Petals", "Dripping glossy text", "Feathers", "Fire Flames", "Flowers", "Gold chain details", "Heart charms", "Hearts", "Ice Crystals", "Leopard Print Accents", "Lightning Bolts", "Lotus Flowers", "Luxury quilting", "Monogram-inspired pattern", "Mushrooms and Toadstools", "Paw Prints", "Pearl accents", "Pearls and Beads", "Rhinestone borders", "Ribbons and Lace", "Roses", "Snowflakes", "Sparkles", "Stars", "Stars and Moons", "Swirls and Flourishes", "Tiny Gems and Diamonds", "Vines and Leaves"], { multi: true }),
+      c("compositionStyle", "Composition Style", ["None", "360 Degree Wraparound Text", "Asymmetrical Balance", "Balanced Decorative Spacing", "Centered Composition", "Circular Badge Design", "Clean Isolated Object", "Curved Arc Composition", "Diagonal Stretched Text", "Drop Shadow Effect", "Floating Bubble Composition", "Frame Within Frame Design", "Grid Geometric Layout", "Horizontal Banner Layout", "Large Central Wordmark", "Layered Depth Effect", "Organic Flowing Arrangement", "Outlined Die-Cut Shape", "Overlapping Layered Text", "Perspective Depth Layout", "Radial Burst Pattern", "Scattered Playful Arrangement", "Spiral Dynamic Layout", "Split Two-Tone Layout", "Stacked Text Layout", "Symmetrical Perfect Mirror", "Tight Sticker Composition", "Vertical Tower Layout", "Wavy Undulating Composition", "White Border Sticker Cutout", "Zig-Zag Dynamic Flow"], { multi: true })
+    ];
+
+    const presets = {
+      "It Girl": { gender: "Female", ageGroup: "Young Adult", bodyType: "Hourglass", ethnicity: "African American", skinTone: "Rich cocoa", artStyle: "Hyper Realistic Airbrushed Baddie", facialExpression: "Glamorous smile", facialFeatures: ["Full glossy lips", "High Cheekbones"], eyeColor: "Brown", eyebrows: "Glossy defined brows", hairColor: "Jet black", hairstyle: ["Long Flowing Waves", "Glossy sculpted edges"], makeup: ["Dewy Skin", "Winged Liner", "Glossy Lips", "Pink Blush", "Dramatic doll lashes"], nails: "Pink Diamond Studded Nails", tattooBodyArt: "Face Gem", womenOutfit: ["Cropped pink hoodie and denim shorts"], womenShoes: "Nike Dunks", colorPalette: "Hot pink and black", womenAccessories: ["Glossy smartphone", "Gold Hoops"], pose: "Holding phone selfie", cameraAngle: "Editorial three-quarter angle", bodyFraming: "Three-quarter body override", background: "Neon City Lights", lighting: "Glossy beauty lighting", effects: "Lens sparkle flares", ornateElements: "Chrome jewelry shine", fontStyle: "Gold cursive script", textOption: "It Girl" },
+      "Street Glam Fierce": { gender: "Female", ageGroup: "Adult", bodyType: "Curvy & Voluptuous", ethnicity: "Latina", skinTone: "Golden tan", artStyle: "Air Brushed Cartoon Baddie", facialExpression: "Fierce determination", facialFeatures: ["Cat eyes", "Defined jaw line"], eyeColor: "Green", eyebrows: "Bold sculpted brows", hairColor: "Rich Brunette", hairstyle: ["Sleek Straight", "Clean laid edges"], makeup: ["Contoured Face", "Double Winged Liner", "MAC Red Matte Lip", "Cat-eye lashes"], nails: "Stiletto Nails", tattooBodyArt: "Sleeve Tattoo", womenOutfit: ["Leather Jacket & Distressed Jeans"], womenShoes: "Combat Boots", colorPalette: "Black white and gold", womenAccessories: ["Chunky Gold Chains", "Oversized Sunglasses"], pose: "Power Stance", cameraAngle: "Full-body low angle", bodyFraming: "Full body head to toe", background: "Neon City Lights", lighting: "Cinematic rim lighting", effects: "Chrome highlights", ornateElements: "Gold chain details", fontStyle: "Dripping graffiti letters", textOption: "Main Character" },
+      "Edgy Art": { gender: "Female", ageGroup: "Young Adult", bodyType: "Slim Petit", ethnicity: "European", skinTone: "Fair porcelain", artStyle: "Comic Book", facialExpression: "Bold fearless", facialFeatures: ["Defined jaw line", "Beauty Marks"], eyeColor: "Lavender", eyebrows: "Precise angled brows", hairColor: "Fiery Red", hairstyle: ["Pixie Cut", "Minimal soft edges"], makeup: ["Cut Crease", "Brick Blush", "Ombred Lips", "Spiky Y2K lashes"], nails: "Square Nails", tattooBodyArt: "Face Tattoo", womenOutfit: ["Corset & Distressed Jeans"], womenShoes: "Platform Boots", colorPalette: "Teal purple and rose", womenAccessories: ["Statement sunglasses", "Rhinestone choker"], pose: "Crouching Pose", cameraAngle: "Full-body low angle", bodyFraming: "Full body with feet visible", background: "Glitter Explosion", lighting: "Holographic side light", effects: "Glossy holographic finish", ornateElements: "Dripping glossy text", fontStyle: "Chrome script", textOption: "Glow Mode" },
+      "Sporty Vibe": { gender: "Female", ageGroup: "Young Adult", bodyType: "Athletic", ethnicity: "Asian", skinTone: "Warm honey", artStyle: "Glossy 3D Bratz", facialExpression: "Confident soft smile", facialFeatures: ["Almond eyes"], eyeColor: "Brown", eyebrows: "Natural Eyebrows", hairColor: "Honey Blonde", hairstyle: ["High Ponytail", "Sleek gelled edges"], makeup: ["Dewy Skin", "Pink Lips", "Peachy Blush", "Fluttery glam lashes"], nails: "Short glossy square nails", tattooBodyArt: "Delicate Ankle Tattoo", womenOutfit: ["Nike Dunk Outfit"], womenShoes: "Nike Air Force 1 White", colorPalette: "Candy pink and lime", womenAccessories: ["Baseball Cap", "Smart Watch"], pose: "Hand in pocket", cameraAngle: "Clean full-body front view", bodyFraming: "Full body head to toe", background: "Spring Meadow", lighting: "Candy neon glow", effects: "Pearl shimmer", ornateElements: "Heart charms", fontStyle: "Pink pop sticker type", textOption: "Glow Mode" },
+      "Cozy Queen": { gender: "Female", ageGroup: "Adult", bodyType: "Soft & Round", ethnicity: "Hispanic", skinTone: "Caramel", artStyle: "Kawaii Luxe", facialExpression: "Gentle smile", facialFeatures: ["Rounded doll cheeks", "Dimples"], eyeColor: "Hazel", eyebrows: "Natural soft brows", hairColor: "Chocolate Brown", hairstyle: ["Soft Waves", "Delicate baby hairs"], makeup: ["Dewy Skin", "Peachy Blush", "Glossy Lips", "Soft wispy lashes"], nails: "French tip nails", tattooBodyArt: "Rose Tattoo", womenOutfit: ["Brown velour tracksuit"], womenShoes: "Ugg Boots", colorPalette: "Chocolate brown and cream", womenAccessories: ["Beanie", "Pearl Jewelry"], pose: "Soft hand on cheek", cameraAngle: "Eye-level fashion shot", bodyFraming: "Seated full body", background: "Glamorous Vanity Room", lighting: "Luxury studio softbox", effects: "Soft glitter texture", ornateElements: "Pearl accents", fontStyle: "Luxury serif wordmark", textOption: "Soft Life" },
+      "Boss Babe": { gender: "Female", ageGroup: "Adult", bodyType: "Tall & Lean", ethnicity: "Black British", skinTone: "Warm almond", artStyle: "Fashion Illustration", facialExpression: "Bossy calm stare", facialFeatures: ["High Cheekbones", "Defined jaw line"], eyeColor: "Hazel", eyebrows: "High glam brows", hairColor: "Rich Brunette", hairstyle: ["Blow Out Style", "Clean laid edges"], makeup: ["Full Matte Face", "Contoured Face", "Winged Liner", "MAC Red Matte Lip", "Thick runway lashes"], nails: "Coffin", tattooBodyArt: "Name Tattoo", womenOutfit: ["Oversized Blazer / Tube Top & Distressed Jeans"], womenShoes: "Louboutin Heels", colorPalette: "Black white and gold", womenAccessories: ["Designer Handbag", "Luxury Watch"], pose: "Arms Crossed Confidently", cameraAngle: "Editorial three-quarter angle", bodyFraming: "Full body head to toe", background: "High-End Boutique", lighting: "Luxury studio softbox", effects: "Diamond sparkle accents", ornateElements: "Luxury quilting", fontStyle: "Luxury serif wordmark", textOption: "Luxury Energy" },
+      "Gamer Vibes": { gender: "Female", ageGroup: "Young Adult", bodyType: "Petite", ethnicity: "Asian", skinTone: "Fair porcelain", artStyle: "Anime Glamor", facialExpression: "Dreamy gaze", facialFeatures: ["Rounded Eyes", "Small Nose"], eyeColor: "Lavender", eyebrows: "Thin Y2K brows", hairColor: "Cotton Candy Blue", hairstyle: ["Space Buns", "Rhinestone accented edges"], makeup: ["Glitter eyeshadow", "Eyeshadow Gradient", "Glossy Lips", "Neon tinted lashes"], nails: "Chrome almond nails", tattooBodyArt: "Glow in the Dark Paint", womenOutfit: ["Graphic Tee & Cargo Pants"], womenShoes: "Croc Slip-In Shoes", colorPalette: "Teal purple and rose", womenAccessories: ["Smart Watch", "Oversized Sunglasses"], pose: "Sitting Elegantly", cameraAngle: "Eye-level fashion shot", bodyFraming: "Seated full body", background: "Retro vaporwave grid", lighting: "Holographic side light", effects: "Neon edge glow", ornateElements: "Crystal trim", fontStyle: "Neon sign typography", textOption: "Glow Mode" },
+      "Glam Diva": { gender: "Female", ageGroup: "Adult", bodyType: "Curvy & Voluptuous", ethnicity: "African American", skinTone: "Deep chocolate", artStyle: "Glossy 3D Bratz", facialExpression: "Sultry pouty", facialFeatures: ["Full glossy lips", "High Cheekbones"], eyeColor: "Brown", eyebrows: "High glam brows", hairColor: "Rose Gold", hairstyle: ["Voluminous Curls", "Glossy sculpted edges"], makeup: ["Contoured Face", "Cut Crease", "Glossy Lips", "Ultra-long lashes"], nails: "Stiletto Nails", tattooBodyArt: "Chest Tattoo", womenOutfit: ["Bodycon Dress"], womenShoes: "Louboutin Heels", colorPalette: "Gold and white", womenAccessories: ["Diamond Link Necklace", "Cocktail Ring"], pose: "Hair Flip", cameraAngle: "Editorial three-quarter angle", bodyFraming: "Full body head to toe", background: "Red Carpet", lighting: "Sparkle key light", effects: "Rhinestone twinkle", ornateElements: "Crystal trim", fontStyle: "Gold cursive script", textOption: "Queen Vibes" },
+      "Party Babe": { gender: "Female", ageGroup: "Young Adult", bodyType: "Fit", ethnicity: "Afro-Latina", skinTone: "Golden tan", artStyle: "Pop Art Glam", facialExpression: "Playful wink", facialFeatures: ["Dimples", "Glossy Lips"], eyeColor: "Pink", eyebrows: "Dark laminated brows", hairColor: "Hot Pink", hairstyle: ["Pigtails", "Heart swoop edges"], makeup: ["Glitter eyeshadow", "Double Winged Liner", "Pink Lips", "Pink Blush", "Dramatic doll lashes"], nails: "Extra-long neon nails", tattooBodyArt: "Glitter Body Art", womenOutfit: ["Hot pink tennis skirt set"], womenShoes: "Strappy Sandals", colorPalette: "Rainbow neon", womenAccessories: ["Cocktail Ring", "Star earrings"], pose: "Lollipop pose", cameraAngle: "Full-body runway perspective", bodyFraming: "Full body with feet visible", background: "Disco Ball Reflection", lighting: "Purple club lighting", effects: "Lens sparkle flares", ornateElements: "Heart charms", fontStyle: "Holographic block letters", textOption: "Pretty and Paid" },
+      "Glam Girl": { gender: "Female", ageGroup: "Young Adult", bodyType: "Hourglass", ethnicity: "Mixed heritage", skinTone: "Warm honey", artStyle: "Airbrushed pop illustration", facialExpression: "Glamorous smile", facialFeatures: ["Beauty Marks", "Almond eyes"], eyeColor: "Green", eyebrows: "Arched feather brows", hairColor: "Honey Blonde", hairstyle: ["Glamour Waves", "Minimal soft edges"], makeup: ["Blush", "Winged Liner", "Pink Lips", "Fluttery glam lashes"], nails: "Glossy white nails", tattooBodyArt: "Delicate Ankle Tattoo", womenOutfit: ["Chiffon Maxi Dress"], womenShoes: "Strappy Sandals", colorPalette: "Lavender pink and cyan", womenAccessories: ["Pearl Jewelry", "Diamond Stud Earrings"], pose: "Sitting Elegantly", cameraAngle: "Editorial three-quarter angle", bodyFraming: "Seated full body", background: "Rose Garden", lighting: "Warm sunset shine", effects: "Pearl shimmer", ornateElements: "Butterfly accents", fontStyle: "Pink pop sticker type", textOption: "Girls Love Glam" },
+      "Kawaii Vibe": { gender: "Female", ageGroup: "Young Adult", bodyType: "Small and Cute", ethnicity: "Asian", skinTone: "Rosy pink", artStyle: "Kawaii Luxe", facialExpression: "Sweet innocent", facialFeatures: ["Doe Eyes", "Small Nose"], eyeColor: "Lavender", eyebrows: "Natural soft brows", hairColor: "Cotton Candy Pink", hairstyle: ["Space Buns", "Heart swoop edges"], makeup: ["Dewy Skin", "Glitter eyeshadow", "Pink Lips", "Fluttery glam lashes"], nails: "Rainbow acrylic nails", tattooBodyArt: "Body Gems & Rhinestones", womenOutfit: ["Rainbow sporty crop set"], womenShoes: "Fuzzy Slippers", colorPalette: "Candy pink and lime", womenAccessories: ["Heart hoops", "Bangle stack"], pose: "Soft hand on cheek", cameraAngle: "Eye-level fashion shot", bodyFraming: "Full body head to toe", background: "Cotton Candy Clouds", lighting: "Candy neon glow", effects: "Soft glitter texture", ornateElements: "Butterfly accents", fontStyle: "Pink pop sticker type", textOption: "Soft Life" }
+    };
+
+    const genreOptions = ["Afrobeats", "R&B", "Pop", "Hip-Hop", "Jazz", "Soul", "Gospel", "Dancehall", "Reggae", "Electronic", "Lo-fi", "Trap", "House", "Funk", "Neo-Soul", "Drill", "Amapiano", "Highlife", "Afro-fusion", "Classical", "Blues", "Rock", "Indie", "Country", "Latin", "K-Pop", "Synthwave"];
+    const influenceOptions = ["Beyonce polish", "SZA softness", "Rihanna confidence", "Doja Cat playful pop", "H.E.R. soul", "Erykah Badu warmth", "Janelle Monae futurism", "Solange art pop", "Megan Thee Stallion confidence", "Cardi B energy", "FKA Twigs texture", "Frank Ocean mood", "The Weeknd night gloss", "Billie Eilish whisper drama", "Tyla bounce"];
+    const vocalOptions = ["Vocal", "Instrumental"];
+
+    function uniqueOptions(options) {
+      const seen = new Set();
+      return options
+        .map(option => String(option || "").trim())
+        .filter(option => {
+          const key = option.toLowerCase();
+          if (!option || seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        });
+    }
+
+    function compareOptionLabels(a, b) {
+      return titleCaseText(a).localeCompare(titleCaseText(b), undefined, {
+        numeric: true,
+        sensitivity: "base"
+      });
+    }
+
+    function sortOptionList(options) {
+      return uniqueOptions(options).sort(compareOptionLabels);
+    }
+
+    function normalizeOptions(options) {
+      const clean = uniqueOptions(options);
+      const withoutNone = clean.filter(option => option.toLowerCase() !== "none");
+      const rest = sortOptionList(withoutNone);
+      return ["None", ...rest];
+    }
+
+    function persistedOptionsFor(categoryId) {
+      return Array.isArray(customOptionsByCategory[categoryId])
+        ? customOptionsByCategory[categoryId]
+        : [];
+    }
+
+    function saveCustomOptions() {
+      localStorage.setItem(customOptionStorageKey, JSON.stringify(customOptionsByCategory));
+    }
+
+    function canonicalOptionValue(categoryId, value) {
+      const cleanValue = String(value || "").trim();
+      const category = getCategory(categoryId);
+      const existing = [...(category?.options || []), ...persistedOptionsFor(categoryId)]
+        .find(option => option.toLowerCase() === cleanValue.toLowerCase());
+      return existing || cleanValue;
+    }
+
+    function addCustomOption(categoryId, value) {
+      const cleanValue = canonicalOptionValue(categoryId, value);
+      const category = getCategory(categoryId);
+      if (!cleanValue || cleanValue === "None" || !category?.custom) return false;
+      const existing = [...category.options, ...persistedOptionsFor(categoryId)]
+        .map(option => option.toLowerCase());
+      if (existing.includes(cleanValue.toLowerCase())) return false;
+      customOptionsByCategory[categoryId] = [...persistedOptionsFor(categoryId), cleanValue];
+      saveCustomOptions();
+      return true;
+    }
+
+    function optionsForCategory(category) {
+      return normalizeOptions(
+        [...category.options, ...persistedOptionsFor(category.id)]
+      );
+    }
+
+    function renderControls() {
+      const controls = document.getElementById("controls");
+      controls.innerHTML = categories.map(category => {
+        const options = optionsForCategory(category);
+        const inputType = category.multi ? "checkbox" : "radio";
+        const displayTitle = `${titleCaseText(category.title)}${category.multi ? " Multi" : ""}`;
+        const chips = options.map(option => `
+          <label class="option-chip">
+            <input type="${inputType}" name="${category.id}" value="${escapeAttr(option)}" ${option === "None" ? "checked" : ""}>
+            <span>${escapeHtml(titleCaseText(option))}</span>
+          </label>
+        `).join("");
+        return `
+          <section class="control-section ${category.open ? "" : "collapsed"}" data-category="${category.id}" data-gender="${category.gender}">
+            <div class="section-head">
+              <button class="collapse-btn" type="button" data-toggle="${category.id}">
+                <span>${escapeHtml(displayTitle)}</span>
+                <span class="count">${options.length} Options</span>
+              </button>
+              <button class="lock-btn" type="button" data-lock="${category.id}" aria-pressed="false">Lock</button>
+            </div>
+            <div class="section-body">
+              <div class="option-strip">${chips}</div>
+              ${category.custom ? `
+                <div class="custom-row">
+                  <input class="custom-input" data-custom="${category.id}" placeholder="Custom ${escapeAttr(displayTitle)}">
+                  <button class="custom-add-btn" type="button" data-add-custom="${category.id}" aria-label="Add Custom ${escapeAttr(displayTitle)}">+</button>
+                </div>
+              ` : ""}
+            </div>
+          </section>
+        `;
+      }).join("");
+    }
+
+    function renderChipGroup(containerId, options, active = []) {
+      const container = document.getElementById(containerId);
+      container.innerHTML = sortOptionList(options).map(option => `
+        <button class="toggle-chip ${active.includes(option) ? "is-active" : ""}" type="button" data-chip="${escapeAttr(option)}">${escapeHtml(titleCaseText(option))}</button>
+      `).join("");
+    }
+
+    function renderOutputBlocks(containerId, blocks) {
+      document.getElementById(containerId).innerHTML = blocks.map(block => `
+        <article class="mini-output">
+          <div class="output-title">
+            <h3>${escapeHtml(titleCaseText(block.title))}</h3>
+            <button class="small-btn" type="button" data-copy-textarea="${escapeAttr(block.id)}">Copy</button>
+          </div>
+          <textarea id="${escapeAttr(block.id)}">${escapeHtml(block.text)}</textarea>
+        </article>
+      `).join("");
+    }
+
+    function escapeHtml(value) {
+      return String(value).replace(/[&<>"']/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#039;" }[char]));
+    }
+
+    function titleCaseText(value) {
+      const overrides = new Map([
+        ["ai", "AI"],
+        ["gpt", "GPT"],
+        ["r&b", "R&B"],
+        ["sza", "SZA"],
+        ["h.e.r.", "H.E.R."],
+        ["fka", "FKA"],
+        ["y2k", "Y2K"],
+        ["mac", "MAC"],
+        ["vip", "VIP"],
+        ["ceo", "CEO"],
+        ["cgi", "CGI"],
+        ["3d", "3D"],
+        ["18k", "18K"],
+        ["lgbtq", "LGBTQ"],
+        ["k-pop", "K-Pop"],
+        ["lo-fi", "Lo-Fi"],
+        ["neo-soul", "Neo-Soul"],
+        ["afro-fusion", "Afro-Fusion"]
+      ]);
+      return String(value || "").replace(/[A-Za-z0-9&.]+(?:[-'][A-Za-z0-9&.]+)*/g, token => {
+        const lower = token.toLowerCase();
+        if (overrides.has(lower)) return overrides.get(lower);
+        return token.split("-").map(part => {
+          const partLower = part.toLowerCase();
+          if (overrides.has(partLower)) return overrides.get(partLower);
+          return part.charAt(0).toUpperCase() + part.slice(1).toLowerCase();
+        }).join("-");
+      });
+    }
+
+    function escapeAttr(value) {
+      return escapeHtml(value).replace(/`/g, "&#096;");
+    }
+
+    function getCategory(categoryId) {
+      return categories.find(category => category.id === categoryId);
+    }
+
+    function sectionFor(categoryId) {
+      return document.querySelector(`[data-category="${categoryId}"]`);
+    }
+
+    function isLocked(categoryId) {
+      const button = document.querySelector(`[data-lock="${categoryId}"]`);
+      return button && button.getAttribute("aria-pressed") === "true";
+    }
+
+    function selectedValue(categoryId) {
+      const section = sectionFor(categoryId);
+      if (!section || section.classList.contains("is-hidden")) return "";
+      const category = getCategory(categoryId);
+      const custom = document.querySelector(`[data-custom="${categoryId}"]`);
+      if (category?.multi) {
+        const selected = [...document.querySelectorAll(`input[name="${categoryId}"]:checked`)]
+          .map(input => input.value)
+          .filter(value => value !== "None");
+        if (custom && custom.value.trim()) {
+          const customValue = canonicalOptionValue(categoryId, custom.value);
+          addCustomOption(categoryId, customValue);
+          selected.push(customValue);
+        }
+        return selected.join(", ");
+      }
+      if (custom && custom.value.trim()) {
+        const customValue = canonicalOptionValue(categoryId, custom.value);
+        addCustomOption(categoryId, customValue);
+        return customValue;
+      }
+      const checked = document.querySelector(`input[name="${categoryId}"]:checked`);
+      return checked && checked.value !== "None" ? checked.value : "";
+    }
+
+    function selectedRadioValue(categoryId) {
+      const checked = document.querySelector(`input[name="${categoryId}"]:checked`);
+      return checked ? checked.value : "None";
+    }
+
+    function setOption(categoryId, value) {
+      const radios = document.querySelectorAll(`input[name="${categoryId}"]`);
+      const category = getCategory(categoryId);
+      if (category?.multi) {
+        const values = Array.isArray(value)
+          ? value
+          : String(value || "None").split(/\s*,\s*|\s*;\s*/).filter(Boolean);
+        let matched = false;
+        radios.forEach(radio => {
+          const shouldCheck = values.includes(radio.value) && radio.value !== "None";
+          radio.checked = shouldCheck;
+          matched = matched || shouldCheck;
+        });
+        const none = [...radios].find(radio => radio.value === "None");
+        if (none) none.checked = !matched;
+        const custom = document.querySelector(`[data-custom="${categoryId}"]`);
+        if (custom) custom.value = "";
+        return;
+      }
+      let matched = false;
+      radios.forEach(radio => {
+        const shouldCheck = radio.value === value;
+        radio.checked = shouldCheck;
+        matched = matched || shouldCheck;
+      });
+      if (!matched && radios[0]) radios[0].checked = true;
+      const custom = document.querySelector(`[data-custom="${categoryId}"]`);
+      if (custom) custom.value = "";
+    }
+
+    function restoreState(state) {
+      Object.entries(state).forEach(([categoryId, value]) => {
+        setOption(categoryId, value || "None");
+      });
+    }
+
+    function optionInputForValue(categoryId, value) {
+      return [...document.querySelectorAll(`input[name="${categoryId}"]`)]
+        .find(input => input.value.toLowerCase() === String(value || "").toLowerCase());
+    }
+
+    function createOptionChip(category, option) {
+      const label = document.createElement("label");
+      label.className = "option-chip";
+      const input = document.createElement("input");
+      input.type = category.multi ? "checkbox" : "radio";
+      input.name = category.id;
+      input.value = option;
+      const span = document.createElement("span");
+      span.textContent = titleCaseText(option);
+      label.append(input, span);
+      return label;
+    }
+
+    function addCustomOptionToPage(categoryId, value) {
+      const category = getCategory(categoryId);
+      const cleanValue = canonicalOptionValue(categoryId, value);
+      if (!category || !cleanValue || cleanValue === "None") return "";
+      addCustomOption(categoryId, cleanValue);
+
+      let input = optionInputForValue(categoryId, cleanValue);
+      if (!input) {
+        const section = sectionFor(categoryId);
+        const strip = section?.querySelector(".option-strip");
+        if (!strip) return cleanValue;
+        const chip = createOptionChip(category, cleanValue);
+        const insertBefore = [...strip.querySelectorAll(".option-chip")]
+          .find(label => {
+            const current = label.querySelector("input")?.value || "";
+            return current !== "None" && compareOptionLabels(cleanValue, current) < 0;
+          });
+        strip.insertBefore(chip, insertBefore || null);
+        section.querySelector(".count").textContent = `${optionsForCategory(category).length} Options`;
+        input = chip.querySelector("input");
+      }
+
+      if (category.multi) {
+        const none = optionInputForValue(categoryId, "None");
+        if (none) none.checked = false;
+        input.checked = true;
+      } else {
+        document.querySelectorAll(`input[name="${categoryId}"]`).forEach(choice => {
+          choice.checked = choice === input;
+        });
+      }
+
+      return cleanValue;
+    }
+
+    function persistCustomInput(input) {
+      const categoryId = input?.dataset?.custom;
+      if (!categoryId || !input.value.trim()) return;
+      const scrollY = window.scrollY;
+      addCustomOptionToPage(categoryId, input.value);
+      input.value = "";
+      window.scrollTo(0, scrollY);
+      requestAnimationFrame(() => window.scrollTo(0, scrollY));
+    }
+
+    function getState() {
+      const state = {};
+      categories.forEach(category => {
+        state[category.id] = selectedValue(category.id);
+      });
+      return state;
+    }
+
+    function splitSelection(value) {
+      return String(value || "")
+        .split(/\s*,\s*/)
+        .map(item => item.trim())
+        .filter(Boolean);
+    }
+
+    function mapCategoryValue(categoryId, value) {
+      return splitSelection(value)
+        .map(item => {
+          const explicit = explicitGuidanceByCategory[categoryId]?.[item];
+          if (explicit) return explicit;
+          const fallback = categoryOutputGuidance[categoryId];
+          return fallback ? fallback(item) : item;
+        })
+        .join(", ");
+    }
+
+    function applyPreset(name) {
+      const preset = presets[name];
+      if (!preset) return;
+      if (preset.gender && !isLocked("gender")) {
+        setOption("gender", preset.gender);
+        applyGenderVisibility();
+      }
+      Object.entries(preset).forEach(([categoryId, value]) => {
+        if (categoryId === "gender" || isLocked(categoryId)) return;
+        const section = sectionFor(categoryId);
+        if (section && !section.classList.contains("is-hidden")) {
+          setOption(categoryId, value);
+        }
+      });
+      generateAll();
+    }
+
+    function applyGenderVisibility() {
+      const gender = selectedRadioValue("gender");
+      const target = gender === "Male" ? "male" : gender === "Female" ? "female" : "all";
+      categories.forEach(category => {
+        if (category.gender === "all") return;
+        const section = sectionFor(category.id);
+        if (!section) return;
+        const shouldHide = target !== "all" && category.gender !== target;
+        section.classList.toggle("is-hidden", shouldHide);
+        if (shouldHide) {
+          setOption(category.id, "None");
+          const custom = document.querySelector(`[data-custom="${category.id}"]`);
+          if (custom) custom.value = "";
+        }
+      });
+    }
+
+    function genderSubject(gender, ageGroup) {
+      if (gender === "Male") return minorAgeGroups.has(ageGroup) ? "a male character / boy" : "a male character / man";
+      if (gender === "Female") return minorAgeGroups.has(ageGroup) ? "a female character / girl" : "a female character / woman";
+      return "a fashion character";
+    }
+
+    function genderLockInstruction(gender) {
+      if (gender === "Male") return "Gender lock: male character only, clearly male presentation, male-coded face and styling, retain the male identity in every output.";
+      if (gender === "Female") return "Gender lock: female character only, clearly female presentation, female-coded face and styling, retain the female identity in every output.";
+      return "";
+    }
+
+    function variationLockInstruction(gender) {
+      const genderLock = genderLockInstruction(gender);
+      const coreLock = "Variation lock: preserve the selected gender, age group, body type, ethnicity, and skin tone from the original prompt; vary only styling, pose, camera, scene, color, typography, and finishing effects.";
+      return [genderLock, coreLock].filter(Boolean).join(" ");
+    }
+
+    function sanitizeStateForGender(state, gender) {
+      const next = { ...state };
+      categories.forEach(category => {
+        if (gender === "Male" && category.gender === "female") next[category.id] = "";
+        if (gender === "Female" && category.gender === "male") next[category.id] = "";
+      });
+      return next;
+    }
+
+    function optionAllowedForGender(category, option, gender) {
+      if (gender === "Male" && maleVariationBlockedOptions[category.id]?.has(option)) return false;
+      return true;
+    }
+
+    function buildPrompt(overrideState, context = {}) {
+      const rawState = overrideState || getState();
+      const s = sanitizeStateForGender(rawState, rawState.gender);
+      const gender = s.gender || "";
+      const isColoringPage = splitSelection(s.artStyle).includes("Thick Lined Coloring Page");
+      const lockInstruction = context.variation ? variationLockInstruction(gender) : genderLockInstruction(gender);
+      const mappedAgeGroup = mapCategoryValue("ageGroup", s.ageGroup);
+      const minorSafety = minorAgeGroups.has(s.ageGroup)
+        ? "Age-safety rule: keep the character fully age-appropriate, modest, playful, non-romantic, non-sultry, and never sexualized."
+        : "";
+      const mappedBodyType = s.bodyType
+        ? minorAgeGroups.has(s.ageGroup)
+          ? "age-appropriate youthful proportions without mature body-shape emphasis"
+          : mapCategoryValue("bodyType", s.bodyType)
+        : "";
+      const mappedSkinTone = mapCategoryValue("skinTone", s.skinTone);
+      const mappedFacialExpression = mapCategoryValue("facialExpression", s.facialExpression);
+      const mappedFacialFeatures = mapCategoryValue("facialFeatures", s.facialFeatures);
+      const mappedEyeColor = mapCategoryValue("eyeColor", s.eyeColor);
+      const identity = [
+        mappedAgeGroup,
+        mappedBodyType,
+        mapCategoryValue("ethnicity", s.ethnicity),
+        mappedSkinTone,
+        mappedEyeColor,
+        mappedFacialFeatures,
+        mappedFacialExpression
+      ].filter(Boolean).join(", ");
+      const hair = [mapCategoryValue("hairColor", s.hairColor), mapCategoryValue("hairstyle", s.hairstyle)].filter(Boolean).join(", ");
+      const beauty = [mapCategoryValue("eyebrows", s.eyebrows), mapCategoryValue("makeup", s.makeup), mapCategoryValue("nails", s.nails), mapCategoryValue("tattooBodyArt", s.tattooBodyArt)].filter(Boolean).join(", ");
+      const outfit = [mapCategoryValue("womenOutfit", s.womenOutfit), mapCategoryValue("womenShoes", s.womenShoes), mapCategoryValue("womenAccessories", s.womenAccessories)].filter(Boolean).join(", ");
+      const scene = [mapCategoryValue("background", s.background)].filter(Boolean).join(", ");
+      const look = isColoringPage
+        ? [mapCategoryValue("artStyle", s.artStyle)].filter(Boolean).join(", ")
+        : [mapCategoryValue("artStyle", s.artStyle), mapCategoryValue("colorPalette", s.colorPalette), mapCategoryValue("lighting", s.lighting), mapCategoryValue("effects", s.effects)].filter(Boolean).join(", ");
+      const typography = [mapCategoryValue("textOption", s.textOption), mapCategoryValue("fontStyle", s.fontStyle), mapCategoryValue("materialStyle", s.materialStyle), mapCategoryValue("textArtStyle", s.textArtStyle), mapCategoryValue("textColorPalette", s.textColorPalette), mapCategoryValue("ornateElements", s.ornateElements)].filter(Boolean).join(", ");
+      const textPlacementRule = typography
+        ? "Text placement rule: keep all lettering and decorative text in a dedicated safe area such as the side margin, top banner, lower banner, background sign, sticker border, or clear negative space. Do not overlap, cover, crop, or clutter the face, eyes, hair, body, outfit, shoes, hands, pose, or main accessories. Maintain readable spacing and clean separation between the character and any text."
+        : "";
+      const coloringPageRule = isColoringPage
+        ? "Coloring page override: the final output must be a clean black-and-white printable coloring page. Use only black outlines on a white background, with no color, no filled-in skin tones, no colored clothing, no colored background, no glossy 3D rendering, no airbrushed shading, no gradients, no realistic shadows, and no grayscale tones. Treat any selected colors, materials, lighting, makeup, or effects as black ink outline details only. Keep details as clear outline shapes with open areas that someone can color in."
+        : "";
+      const framing = s.bodyFraming || "Full body head to toe";
+      const mappedFraming = mapCategoryValue("bodyFraming", framing);
+      const fullBodyRule = /close|portrait|three-quarter/i.test(framing)
+        ? `${mappedFraming}, user-selected framing override.`
+        : `${mappedFraming}, complete head-to-toe visibility, full outfit and shoes visible, feet not cropped.`;
+      const mappedCompositionStyle = mapCategoryValue("compositionStyle", s.compositionStyle);
+      const compositionDetails = [fullBodyRule.replace(/\.$/, ""), mappedCompositionStyle].filter(Boolean).join(", ");
+      const mappedPose = mapCategoryValue("pose", s.pose);
+      const mappedCamera = mapCategoryValue("cameraAngle", s.cameraAngle);
+      const openingStyle = isColoringPage
+        ? "printable black-and-white coloring book character aesthetic, thick clean outlines, open white fill areas, simplified readable fashion details, high-contrast ink line art"
+        : styleDNA;
+      const finalQualityRule = isColoringPage
+        ? "Make the face uniquely distinct, the pose polished, the styling fashion-forward, and the final image clean, printable, black-and-white, uncolored, high-contrast, and ready as a coloring page."
+        : "Make the face uniquely distinct, the pose polished, the styling fashion-forward, the rendering high detail, the skin glossy but tasteful, and the final image clean, cinematic, vibrant, premium, and ready for AI image generation.";
+      const parts = [
+        `Create a premium ${isColoringPage ? "printable coloring page" : "hyper-realistic glossy 8K AI image"} of ${genderSubject(gender, s.ageGroup)} in the ${openingStyle}.`,
+        lockInstruction,
+        identity && `Identity details: ${identity}.`,
+        hair && `Hair: ${hair}.`,
+        beauty && `Beauty styling: ${beauty}.`,
+        outfit && `Wardrobe and accessories: ${outfit}.`,
+        mappedPose && `Pose: ${mappedPose}.`,
+        mappedCamera && `Camera: ${mappedCamera}.`,
+        `Composition: ${compositionDetails}.`,
+        scene && `Scene: ${scene}.`,
+        look && `Visual treatment: ${look}.`,
+        typography && `Text or typography: ${typography}.`,
+        textPlacementRule,
+        coloringPageRule,
+        minorSafety,
+        finalQualityRule
+      ];
+      return parts.filter(Boolean).join(" ");
+    }
+
+    function buildVideoScript(prompt) {
+      const s = getState();
+      const voice = s.textOption && s.textOption !== "No visible text" ? s.textOption : "Main character energy";
+      const animationLight = mapCategoryValue("lighting", s.lighting) || "cinematic light with controlled glossy highlights";
+      return [
+        `0-3 Seconds: Open with a glossy full-body reveal, hair and jewelry catching the ${animationLight}.`,
+        `3-7 Seconds: The camera pushes in as the character shifts into a polished fashion pose, sparkle highlights moving across the outfit and accessories.`,
+        `7-11 Seconds: Add a smooth pose change, soft hair movement, glowing background accents, and a quick detail shot of shoes, nails, jewelry, or handbag.`,
+        `11-15 Seconds: Pull back to a confident final stance with a clean beauty close-up, bright text moment, and premium brand-ready finish.`,
+        `Voiceover: "${voice}. Premium glow, every single time."`
+      ].join("\n");
+    }
+
+    function buildSunoOutputs(promptOverride) {
+      const prompt = promptOverride || document.getElementById("mainPrompt").value || buildPrompt();
+      const s = getState();
+      const genres = activeChips("genreChips").join(", ") || "User-Selected Genre Blend";
+      const influences = activeChips("influenceChips").join(", ") || "Custom Polished Glam Reference Style";
+      const vocal = activeChips("vocalChips")[0] || "User-Selected Vocal Type";
+      const weirdness = document.getElementById("weirdness").value;
+      const style = document.getElementById("styleInfluence").value;
+      const audio = document.getElementById("audioInfluence").value;
+      const visualTheme = [
+        mapCategoryValue("textOption", s.textOption),
+        mapCategoryValue("artStyle", s.artStyle),
+        mapCategoryValue("background", s.background),
+        mapCategoryValue("colorPalette", s.colorPalette)
+      ].filter(Boolean).join(", ") || "glam premium image reveal";
+      const performanceMood = [
+        mapCategoryValue("facialExpression", s.facialExpression),
+        mapCategoryValue("pose", s.pose),
+        mapCategoryValue("lighting", s.lighting),
+        mapCategoryValue("effects", s.effects)
+      ].filter(Boolean).join(", ") || "confident glossy glam energy";
+      const fashionCue = [
+        mapCategoryValue("womenOutfit", s.womenOutfit),
+        mapCategoryValue("womenShoes", s.womenShoes),
+        mapCategoryValue("womenAccessories", s.womenAccessories)
+      ].filter(Boolean).join(", ") || "premium fashion styling";
+      const hook = s.textOption && s.textOption !== "No visible text" ? s.textOption : "Glow up, show up";
+      renderOutputBlocks("sunoOutputs", [
+        {
+          id: "jingleOutput",
+          title: "Jingle",
+          text: `${vocal}. Genres: ${genres}. Mood: bright luxury bounce, ${performanceMood}. Style references: ${influences}. Hook: "${hook}." Lyrics: Glow up, show up, camera loves the shine. Premium look, main character line.`
+        },
+        {
+          id: "song30Output",
+          title: "30-Second Song",
+          text: `${vocal} 30-second ${genres} track for ${visualTheme}. Build it like a glossy visual reveal: 4-second intro sparkle, 12-second confident verse, 10-second hook around "${hook}", and a 4-second brand-ready ending. Keep lyrics polished, stylish, upbeat, and easy to use in a short promo video.`
+        },
+        {
+          id: "song60Output",
+          title: "1-Minute Song",
+          text: `${vocal} 1-minute ${genres} song inspired by ${visualTheme}. Verse 1 introduces the glam character and ${fashionCue}. Pre-hook builds confidence and movement. Hook repeats "${hook}" with a memorable chant. Bridge adds sparkle, luxury, and scroll-stopping energy. Final hook ends clean for ads, Reels, TikTok, and YouTube Shorts.`
+        },
+        {
+          id: "sunoSettingsOutput",
+          title: "Suggested Suno Settings",
+          text: `Genres: ${genres}. Vocal Mode: ${vocal}. Style References: ${influences}. Visual Theme: ${visualTheme}. Performance Mood: ${performanceMood}. Weirdness ${weirdness}%. Style Influence ${style}%. Audio Influence ${audio}%. Tie the sound to this image prompt: ${prompt.slice(0, 360)}...`
+        }
+      ]);
+    }
+
+    function refreshSunoOutputs(button) {
+      const prompt = buildPrompt();
+      document.getElementById("mainPrompt").value = prompt;
+      document.getElementById("videoScript").value = buildVideoScript(prompt);
+      buildSunoOutputs(prompt);
+      flashButton(button, "Refreshed!");
+    }
+
+    function buildMarketingOutputs() {
+      const s = getState();
+      const concept = [mapCategoryValue("textOption", s.textOption), mapCategoryValue("artStyle", s.artStyle), mapCategoryValue("background", s.background), mapCategoryValue("colorPalette", s.colorPalette)].filter(Boolean).join(", ") || "premium glossy glam character image";
+      renderOutputBlocks("marketingOutputs", [
+        { id: "captionOutput", title: "Captions", text: `A scroll-stopping ${concept} made for premium brand energy, bold visuals, and instant attention. Make the timeline pause.` },
+        { id: "hashtagOutput", title: "Hashtags", text: "#GlamGlow #AIImagePrompt #DigitalArt #BrandVisuals #LuxuryStreetwear #ContentCreator #ScrollStoppingContent #PromptGenerator #VisualMarketing" },
+        { id: "seoOutput", title: "SEO Keywords", text: `AI image prompt generator, glossy glam character prompt, premium digital art prompt, fashion doll AI image, ${concept}, social media visual prompts` },
+        { id: "ctaOutput", title: "Calls to Action", text: "Create the look. Post the moment. Turn the visual into traffic. Build your premium image set now." },
+        { id: "emailOutput", title: "Email Promo Copy", text: `Subject: Your next premium visual is ready\nBring ${concept} to life with a polished prompt built for attention, brand shine, and sales-ready content.` },
+        { id: "pinterestOutput", title: "Pinterest Promo Copy", text: `Pin-ready AI prompt for ${concept}. Save this glam visual idea for brand content, product drops, and bold digital campaigns.` },
+        { id: "tiktokOutput", title: "TikTok Promo Copy", text: `POV: your content finally looks expensive. Use this ${concept} prompt to build a look that stops the scroll fast.` },
+        { id: "facebookOutput", title: "Facebook Promo Copy", text: `Turn your idea into a polished AI-ready image prompt with glossy styling, premium details, and visual energy built for clicks.` },
+        { id: "instagramOutput", title: "Instagram Promo Copy", text: `Main character visuals only. This ${concept} prompt is made for glossy posts, Reels covers, and bold brand campaigns.` },
+        { id: "youtubeOutput", title: "YouTube Promo Copy", text: `Create thumbnail-ready glam visuals with premium style, cinematic lighting, and a prompt structure built around your selected concept.` },
+        { id: "adOutput", title: "Ad Copy", text: `Stop posting basic visuals. Generate premium glossy AI image prompts that help your brand look polished, memorable, and ready to sell.` }
+      ]);
+    }
+
+    function buildGptOutputs() {
+      const categoryNames = categories.map(category => category.title).join(", ");
+      renderOutputBlocks("gptOutputs", [
+        {
+          id: "gptInstructionsOutput",
+          title: "Custom GPT Instructions",
+          text: `You are Glam Glow AI Image Generator, a premium prompt-building assistant for glossy fashion-doll inspired AI images. Use radio-style category selections, custom text overrides, lock-aware randomization, strict gender-lock logic, full-body framing by default, and this category structure: ${categoryNames}. Assemble polished image prompts using the selected identity, styling, scene, lighting, camera, typography, color, and framing values. Keep outputs hyper-realistic, glossy, premium, highly detailed, cinematic, fashion-forward, and 8K-ready.`
+        },
+        {
+          id: "starterQuestionsOutput",
+          title: "Starter Questions",
+          text: "Build a full-body glam character prompt for my brand.\nRandomize a glossy luxury streetwear look.\nCreate three fresh variations of this character.\nTurn this prompt into captions, hashtags, and a Suno song concept."
+        },
+        {
+          id: "knowledgeOutput",
+          title: "Knowledge",
+          text: `This generator is based on uploaded reference images featuring glossy glam fashion characters, oversized expressive eyes, dramatic lashes, radiant skin, luxury streetwear, neon and candy color palettes, gold jewelry, sparkling effects, full-body styling, and polished editorial rendering. It includes presets, radio categories, custom fields, locks, prompt history, 3-variation logic, a 15-second animated video script, Suno music outputs, marketing outputs, and Custom GPT setup copy.`
+        }
+      ]);
+    }
+
+    function generateAll() {
+      applyGenderVisibility();
+      const prompt = buildPrompt();
+      document.getElementById("mainPrompt").value = prompt;
+      document.getElementById("videoScript").value = buildVideoScript(prompt);
+      buildSunoOutputs();
+      buildMarketingOutputs();
+      buildGptOutputs();
+      renderHistory();
+      return prompt;
+    }
+
+    function chooseRandomOption(category, gender = "") {
+      const options = optionsForCategory(category)
+        .filter(option => option !== "None")
+        .filter(option => optionAllowedForGender(category, option, gender));
+      if (!options.length) return "None";
+      return options[Math.floor(Math.random() * options.length)];
+    }
+
+    function randomizeAll() {
+      for (let attempt = 0; attempt < 60; attempt++) {
+        categories.forEach(category => {
+          if (category.id === "preset" || isLocked(category.id)) return;
+          const section = sectionFor(category.id);
+          if (!section || section.classList.contains("is-hidden")) return;
+          setOption(category.id, chooseRandomOption(category, selectedRadioValue("gender")));
+          if (category.id === "gender") applyGenderVisibility();
+        });
+        applyGenderVisibility();
+        const signature = JSON.stringify(getState());
+        if (!recentSignatures.includes(signature)) {
+          recentSignatures.push(signature);
+          if (recentSignatures.length > 500) recentSignatures.shift();
+          break;
+        }
+      }
+      generateAll();
+    }
+
+    function randomStateVariation(base) {
+      const gender = base.gender;
+      const next = sanitizeStateForGender(base, gender);
+      const keep = new Set(["gender", "ageGroup", "bodyType", "ethnicity", "skinTone"]);
+      const change = new Set(["hairColor", "hairstyle", "makeup", "nails", "tattooBodyArt", "womenOutfit", "womenShoes", "womenAccessories", "pose", "cameraAngle", "lighting", "fontStyle", "materialStyle", "textArtStyle", "textColorPalette", "compositionStyle", "textOption", "facialExpression", "facialFeatures", "eyebrows", "background", "artStyle", "colorPalette"]);
+      categories.forEach(category => {
+        if (keep.has(category.id) || !change.has(category.id) || isLocked(category.id)) return;
+        if (gender === "Female" && category.gender === "male") return;
+        if (gender === "Male" && category.gender === "female") return;
+        next[category.id] = chooseRandomOption(category, gender);
+      });
+      return sanitizeStateForGender(next, gender);
+    }
+
+    function makeVariations() {
+      const base = sanitizeStateForGender(getState(), selectedRadioValue("gender"));
+      const variations = [randomStateVariation(base), randomStateVariation(base), randomStateVariation(base)]
+        .map(state => buildPrompt(state, { variation: true }));
+      document.getElementById("variationList").innerHTML = variations.map((text, index) => `
+        <article class="variation-item">
+          <div class="output-title">
+            <h3>Variation ${index + 1}</h3>
+            <button class="small-btn" type="button" data-copy-variation>Copy Prompt</button>
+          </div>
+          <p>${escapeHtml(text)}</p>
+        </article>
+      `).join("");
+      return variations.join("\n\n");
+    }
+
+    function clearAll() {
+      categories.forEach(category => {
+        if (!isLocked(category.id)) setOption(category.id, "None");
+        const custom = document.querySelector(`[data-custom="${category.id}"]`);
+        if (custom && !isLocked(category.id)) custom.value = "";
+      });
+      applyGenderVisibility();
+      document.getElementById("mainPrompt").value = "";
+      document.getElementById("videoScript").value = "";
+      document.getElementById("variationList").innerHTML = "";
+      buildSunoOutputs();
+      buildMarketingOutputs();
+      buildGptOutputs();
+    }
+
+    function savePrompt() {
+      const prompt = document.getElementById("mainPrompt").value || generateAll();
+      promptHistory.unshift({ prompt, date: new Date().toLocaleString() });
+      promptHistory.splice(20);
+      localStorage.setItem("glamGlowPromptHistory", JSON.stringify(promptHistory));
+      renderHistory();
+    }
+
+    function renderHistory() {
+      const list = document.getElementById("historyList");
+      list.innerHTML = promptHistory.length ? promptHistory.map((item, index) => `
+        <article class="history-item">
+          <div class="output-title">
+            <strong>${escapeHtml(item.date)}</strong>
+            <button class="small-btn" type="button" data-history="${index}">Copy</button>
+          </div>
+          <p>${escapeHtml(item.prompt)}</p>
+        </article>
+      `).join("") : `<article class="history-item"><p>No Saved Prompts Yet.</p></article>`;
+    }
+
+    function activeChips(containerId) {
+      return [...document.querySelectorAll(`#${containerId} .toggle-chip.is-active`)].map(button => button.dataset.chip);
+    }
+
+    async function copyText(text, sourceElement) {
+      const value = String(text || "");
+      if (!value.trim()) return false;
+      try {
+        if (navigator.clipboard?.writeText) {
+          await navigator.clipboard.writeText(value);
+          return true;
+        }
+      } catch {
+        // Fall through to selection-based copying for local file browsers.
+      }
+
+      let temp;
+      try {
+        const target = sourceElement || document.createElement("textarea");
+        if (!sourceElement) {
+          temp = target;
+          document.body.appendChild(temp);
+        }
+        target.value = value;
+        target.focus?.();
+        target.select?.();
+        target.setSelectionRange?.(0, value.length);
+        const copied = document.execCommand("copy");
+        temp?.remove();
+        return copied;
+      } catch {
+        temp?.remove();
+        return false;
+      }
+    }
+
+    function flashCopied(button, copied) {
+      if (!button || !copied) return;
+      flashButton(button, "Copied!");
+    }
+
+    function flashButton(button, label) {
+      if (!button) return;
+      const original = button.textContent;
+      button.textContent = label;
+      button.disabled = true;
+      window.setTimeout(() => {
+        button.textContent = original;
+        button.disabled = false;
+      }, 1200);
+    }
+
+    function copyTextareaValue(textareaId, button) {
+      const textarea = document.getElementById(textareaId);
+      return copyText(textarea.value, textarea).then(copied => flashCopied(button, copied));
+    }
+
+    function copyLooseText(text, button) {
+      return copyText(text).then(copied => flashCopied(button, copied));
+    }
+
+    function wireEvents() {
+      document.addEventListener("click", async event => {
+        const toggle = event.target.closest("[data-toggle]");
+        if (toggle) {
+          sectionFor(toggle.dataset.toggle).classList.toggle("collapsed");
+          return;
+        }
+        const lock = event.target.closest("[data-lock]");
+        if (lock) {
+          const locked = lock.getAttribute("aria-pressed") === "true";
+          lock.setAttribute("aria-pressed", String(!locked));
+          lock.textContent = locked ? "Lock" : "Locked";
+          return;
+        }
+        const addCustomButton = event.target.closest("[data-add-custom]");
+        if (addCustomButton) {
+          const input = document.querySelector(`[data-custom="${addCustomButton.dataset.addCustom}"]`);
+          persistCustomInput(input);
+          return;
+        }
+        const actionButton = event.target.closest("[data-action]");
+        const action = actionButton?.dataset.action;
+        if (action === "generate") generateAll();
+        if (action === "random") randomizeAll();
+        if (action === "clear") clearAll();
+        if (action === "save") savePrompt();
+        if (action === "variations") {
+          if (!document.getElementById("mainPrompt").value) generateAll();
+          makeVariations();
+        }
+        if (action === "copy-main") {
+          if (!document.getElementById("mainPrompt").value) generateAll();
+          await copyTextareaValue("mainPrompt", actionButton);
+        }
+        if (action === "copy-video") await copyTextareaValue("videoScript", actionButton);
+        if (action === "refresh-suno") refreshSunoOutputs(actionButton);
+
+        const variationButton = event.target.closest("[data-copy-variation]");
+        if (variationButton) {
+          const variationText = variationButton.closest(".variation-item")?.querySelector("p")?.textContent || "";
+          await copyLooseText(variationText, variationButton);
+        }
+
+        const chip = event.target.closest(".toggle-chip");
+        if (chip) {
+          const parent = chip.parentElement.id;
+          if (parent === "vocalChips") {
+            [...chip.parentElement.children].forEach(button => button.classList.remove("is-active"));
+          }
+          chip.classList.toggle("is-active");
+          if (parent === "vocalChips" && !chip.classList.contains("is-active")) chip.classList.add("is-active");
+          buildSunoOutputs();
+        }
+
+        const copyTextarea = event.target.closest("[data-copy-textarea]");
+        if (copyTextarea) {
+          await copyTextareaValue(copyTextarea.dataset.copyTextarea, copyTextarea);
+        }
+
+        const historyButton = event.target.closest("[data-history]");
+        if (historyButton) {
+          await copyLooseText(promptHistory[Number(historyButton.dataset.history)]?.prompt || "", historyButton);
+        }
+      });
+
+      document.addEventListener("change", event => {
+        const changedCategory = getCategory(event.target.name);
+        if (changedCategory?.multi) {
+          const inputs = [...document.querySelectorAll(`input[name="${changedCategory.id}"]`)];
+          const none = inputs.find(input => input.value === "None");
+          if (event.target.value === "None" && event.target.checked) {
+            inputs.forEach(input => {
+              if (input.value !== "None") input.checked = false;
+            });
+          } else if (event.target.checked && none) {
+            none.checked = false;
+          }
+          if (!inputs.some(input => input.checked) && none) none.checked = true;
+        }
+        if (event.target.name === "gender") applyGenderVisibility();
+        if (event.target.name === "preset") applyPreset(event.target.value);
+      });
+
+      document.addEventListener("keydown", event => {
+        if (event.target.matches("[data-custom]") && event.key === "Enter") {
+          event.preventDefault();
+          persistCustomInput(event.target);
+        }
+      });
+
+      document.querySelectorAll("input[type='range']").forEach(slider => {
+        slider.addEventListener("input", event => {
+          document.getElementById(`${event.target.id}Value`).textContent = `${event.target.value}%`;
+          buildSunoOutputs();
+        });
+      });
+
+      document.querySelectorAll("[data-scroll]").forEach(button => {
+        button.addEventListener("click", () => {
+          if (button.dataset.scroll === "top") window.scrollTo({ top: 0, behavior: "smooth" });
+          else window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+        });
+      });
+    }
+
+    renderControls();
+    renderChipGroup("genreChips", genreOptions);
+    renderChipGroup("influenceChips", influenceOptions);
+    renderChipGroup("vocalChips", vocalOptions);
+    wireEvents();
+    applyGenderVisibility();
+    generateAll();
+  </script>
+</body>
+</html>
